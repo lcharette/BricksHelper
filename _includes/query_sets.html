@@ -1,0 +1,66 @@
+<h1 class="fit"><small>Search by sets</small></h1>
+
+<form action="javascript:void(0);" id="setForm" onsubmit="App.SetSearch.Search()">
+
+	<div class="form-group">
+		<label for="setNumber">Select country</label>
+		{% include county_list.html %}
+	</div>
+	<div class="form-group">
+		<label for="setFormValue">Set number<br /><small>Tip: Search for multiple sets at once using a comma-separated list</small></label>
+		<input type="text" class="form-control" id="setFormValue" placeholder="Set number" value="">
+	</div>
+
+	<button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<div class="progressDiv" id="setProgress" style="display: none;">
+	<i class="fa fa-spinner fa-spin fa-3x"></i>
+    <p>Searching set <span class="current"></span> of <span class="totalnb"></span></p>
+</div>
+
+<br /><br />
+
+<div id="setsPlaceholder"></div>
+
+<div class="hidden">
+	<table id="setTemplateTable">
+		<tr class="templateTable_row">
+			<td class="asset v-align-middle"><img src=""></td>
+			<td class="small">
+				Element: <a class="elementID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Design ID <a class="desingID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Part name: <span class="desc"></span><br />
+				Color: <span class="color"></span>
+			</td>
+			<td class="price v-align-middle" align="center"></td>
+		</tr>
+	</table>
+
+	<div class="panel panel-primary setCard" id="setsPannelTemplate">
+		<!-- Default panel contents -->
+		<div class="panel-heading"></div>
+		<div class="panel-body">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-2"><img class="pull-left setImg" src="" alt="Set image"></div>
+					<div class="col-md-10">
+						<p>Set number: <span class="setNumber"></span></p>
+						<p>Number of elements found: <span class="setNbPieces"></span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Table -->
+		<table class="table table-bordered ListTable">
+			<tr>
+				<th>Image</th>
+				<th>Brick info</th>
+				<th>Unit price</th>
+			</tr>
+		</table>
+	</div>
+
+	<div class="alert alert-danger" role="alert" id="setNotFound"><span class="glyphicon glyphicon-exclamation-sign"></span> Set <span class="txt"></span> not found</div>
+</div>

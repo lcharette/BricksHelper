@@ -1,0 +1,53 @@
+/**
+ * Main table
+ */
+
+.ListTable td.asset {
+	text-align: center;
+}
+
+.ListTable img {
+	max-height: 50px;
+}
+
+.setCard img.setImg {
+	max-height: 100px;
+}
+
+div.setCard {
+	margin-bottom: 40px;
+}
+
+i.LEGO_PartNotFound, i.LEGO_PartColorNotFound, i.LEGO_PartNotAvailable {
+	font-size: 18px;
+}
+
+i.LEGO_PartNotFound { color: red; }
+i.LEGO_PartColorNotFound { color: orange; }
+i.LEGO_PartNotAvailable { color: black; }
+
+.templateTable_Totalrow > td {
+	padding-right: 3px;
+}
+
+.bw-image {
+	filter: gray; /* IE6-9 */
+	filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
+	-webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
+
+	opacity: 0.4;
+    filter: alpha(opacity=40); /* For IE8 and earlier */
+}
+
+
+
+.progressDiv {
+	width: 100%;
+	text-align: center;
+	margin-top: 20px;
+}
+
+
+label > small {
+	color: grey;
+}

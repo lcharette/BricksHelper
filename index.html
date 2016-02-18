@@ -1,0 +1,44 @@
+---
+layout: default
+---
+
+<p>Bricks & Pieces helper goal is to help you find the value of you Lego Digital Designer (LDD) model and other bricks on The LEGO Group Bricks and Pieces customer support website. <a href="/about">Read more</a>.</p>
+
+<div class="home row">
+
+	<div class="col-md-3">
+		<h3 class="totalFit"><small>Menu</small></h3>
+		<ul class="nav nav-pills nav-stacked"  style="margin-left: 0px !important">
+		  <li role="presentation" class="active nav-app-ldd"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-ldd"><i class="fa fa-cloud-upload"></i> LDD import</a></li>
+		  <li role="presentation" class="nav-app-sets"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-sets"><i class="fa fa-archive"></i> Search by sets</a></li>
+		  <li role="presentation" class="nav-app-bricks"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-bricks"><i class="fa fa-puzzle-piece"></i> Search by bricks</a></li>
+		</ul>
+	</div>
+
+	<div class="col-md-9">
+		<div class="nav-app-ldd">{% include query_ldd.html %}</div>
+		<div class="nav-app-sets" style="display: none">{% include query_sets.html %}</div>
+		<div class="nav-app-bricks" style="display: none">{% include query_bricks.html %}</div>
+	</div>
+</div>
+
+<div id="commonTemplate" class="hidden">
+	<div id="LDDErrorIconTemplate">
+		<i class="fa fa-exclamation-triangle LEGO_PartNotFound" data-toggle="tooltip" data-placement="top" title="Desing ID not found."></i>
+		<i class="fa fa-exclamation-triangle LEGO_PartColorNotFound" data-toggle="tooltip" data-placement="top" title="Design ID was found, but no color match is available. Other color might be available."></i>
+		<i class="fa fa-exclamation-triangle LEGO_PartNotAvailable" data-toggle="tooltip" data-placement="top" title="Element was found, but it's not in stock at the moment."></i>
+	</div>
+</div>
+
+<script>
+	var App;
+	$( document ).ready(function() {
+		App = new PBHelper ({
+			"LLDUpload_interface" : ".nav-app-ldd",
+			"SetSearch_interface" : ".nav-app-sets",
+			"BrickSearch_interface" : ".nav-app-bricks"
+		});
+	});
+</script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/LEGO_colors.js"></script>

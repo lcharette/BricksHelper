@@ -1,0 +1,61 @@
+/*
+ * Header
+ */
+
+h1.fit,
+h2.fit,
+h3.fit,
+h4.fit,
+h5.fit,
+h6.fit {
+	margin-top: 0px;
+}
+
+h1.totalFit,
+h2.totalFit,
+h3.totalFit,
+h4.totalFit,
+h5.totalFit,
+h6.totalFit {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+/*
+ * Table Vertical Align
+ */
+
+ .v-align-middle {
+	 vertical-align: middle !important;
+ }
+
+ /*
+ * Progress
+ */
+
+.progress {
+	position: relative;
+}
+
+.progress > .progress-bar-label {
+	width: 100%;
+    color: black;
+    text-align: center;
+    position: absolute;
+    font-size: 12px;
+    line-height: 20px;
+}
+
+/*
+ * dropzone
+ */
+
+.dropzone {
+	border-radius: 15px;
+    border: 5px dashed lightgray !important;
+}
+
+.dz-message {
+    font-size: 18px;
+    color: grey;
+}

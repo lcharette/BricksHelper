@@ -1,0 +1,11 @@
+---
+permalink: .htaccess
+---
+
+#####################################################
+# SWITCH DE FERMETURE DU SITE
+#####################################################
+#ErrorDocument 503 "No entry. Keep out !"
+#RewriteEngine On
+#RewriteCond %{REMOTE_ADDR} !^70\.83\.49\.145$
+#RewriteRule .* - [R=503,L]

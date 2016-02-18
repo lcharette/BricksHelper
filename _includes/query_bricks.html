@@ -1,0 +1,60 @@
+<h1 class="fit"><small>Search by bricks</small></h1>
+
+<form action="javascript:void(0);" id="brickForm" onsubmit="App.BrickSearch.Search()">
+
+	<div class="form-group">
+		<label for="setNumber">Select country</label>
+		{% include county_list.html %}
+	</div>
+	<div class="form-group">
+		<label for="brickFormValue">Element ID / Design ID<br /><small>Tip: Search for multiple bricks at once using a comma-separated list</small></label>
+		<input type="text" class="form-control" id="brickFormValue" placeholder="Element ID / Design ID" value="">
+	</div>
+
+	<button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<br /><br />
+
+<div id="bricksPlaceholder"></div>
+
+
+<div class="progressDiv" id="brickProgress" style="display: none;">
+	<i class="fa fa-spinner fa-spin fa-3x"></i>
+    <p>Searching element <span class="current"></span> of <span class="totalnb"></span></p>
+</div>
+
+<br /><br />
+
+<div id="setsPlaceholder"></div>
+
+<div class="hidden">
+	<table id="brickTemplateTable">
+		<tr class="templateTable_row">
+			<td class="asset v-align-middle"><img src=""></td>
+			<td class="small">
+				Element: <span class="elementID"></span><br />
+				Design ID <span class="desingID"></span><br />
+				Part name: <span class="desc"></span><br />
+				Color: <span class="color"></span>
+			</td>
+			<td class="price v-align-middle" align="center"></td>
+		</tr>
+	</table>
+
+	<div class="panel panel-primary setCard" id="bricksPannelTemplate">
+		<!-- Default panel contents -->
+		<div class="panel-heading">Search query : <span></span></div>
+
+		<!-- Table -->
+		<table class="table table-bordered ListTable">
+			<tr>
+				<th>Image</th>
+				<th>Brick info</th>
+				<th>Unit price</th>
+			</tr>
+		</table>
+	</div>
+
+	<div class="alert alert-danger" role="alert" id="bricksNotFound"><span class="glyphicon glyphicon-exclamation-sign"></span> Element <span class="txt"></span> not found</div>
+</div>

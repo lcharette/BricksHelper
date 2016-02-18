@@ -1,0 +1,148 @@
+<h1 class="fit"><small>LDD import</small></h1>
+
+<form action="LDDupload.php" class="dropzone" id="LDDUpload_dropzone">
+	<div class="dz-message">Drop LDD .lxf file here (or click!)</div>
+</form>
+
+<div class="progress" id="LDDUpload_progress" style="display: none;">
+  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+</div>
+
+<div class="alert alert-danger" role="alert" style="display: none; margin-top: 15px;" id="LDDUpload_error">
+	<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+	<p style="display: inline;"></p>
+</div>
+
+<div class="panel panel-primary" id="LDDUpload_file" style="display: none;">
+	<!-- Default panel contents -->
+	<div class="panel-heading"></div>
+	<div class="panel-body">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-2"><img class="pull-left setImg" src="" alt="Set image"></div>
+				<div class="col-md-10">
+					<p>Total number of bricks found: <span class="setNbPieces"></span></p>
+					<p>Number of unique element found: <span class="setNbUniqueElements"></span></p>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="setNumber">Select country</label>
+			{% include county_list.html %}
+		</div>
+		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
+		<button class="btn btn-default btn-previewLDD" onclick="App.LDDUpload.Preview();"><i class="fa fa-eye"></i> Preview parts found</button>
+		<button class="btn btn-primary btn-analyseLDD" onclick="App.LDDUpload.Analyse();"><i class="fa fa-search"></i> Find model value</button>
+
+		<div class="progress" id="analyseLDD_progress" style="display: none; margin-top: 20px;">
+		  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+		  <div class="progress-bar-label">Searching element <span class="current"></span> of <span class="totalnb"></span></div>
+		</div>
+	</div>
+
+	<!-- Table -->
+	<table class="table table-bordered ListTable" style="display:none">
+		<tr>
+			<th>Image</th>
+			<th>Brick info</th>
+			<th>Qte used</th>
+			<th>Unit price</th>
+			<th>Total price</th>
+		</tr>
+	</table>
+</div>
+
+<div class="hidden">
+	<table id="LDDtemplateTable">
+		<tr class="templateTable_row">
+			<td class="asset v-align-middle"><img src=""></td>
+			<td class="small">
+				Element: <a class="elementID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Design ID: <a class="desingID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Part name: <span class="desc"></span><br />
+				Color: <span class="color"></span>
+			</td>
+			<td class="qte v-align-middle" align="center"></td>
+			<td class="price v-align-middle" align="center"></td>
+			<td class="priceTotal v-align-middle" align="center"></td>
+		</tr>
+		<tr class="templateTable_Totalrow">
+			<td colspan="6" align="right"><strong>Total: <span class="txtTotal"></span></strong></td>
+		</tr>
+	</table>
+</div>
+
+<script>
+
+	/*
+	 * NOTE: Dropzone code was left here. Everything else is in App.js
+	 */
+
+	//Source: http://www.dropzonejs.com/#event-success
+	$(function() {
+
+
+		var myDropzone = new Dropzone("#LDDUpload_dropzone");
+		myDropzone.on("addedfile", function(file) {
+			$("#LDDUpload_dropzone").hide();
+			$("#LDDUpload_error").hide();
+			$("#LDDUpload_progress").show();
+		});
+
+		myDropzone.on("uploadprogress", function(file, progress) {
+			$("#LDDUpload_progress > div").css("width", progress+"%");
+		});
+
+		myDropzone.on("complete", function(file) {
+
+			var data = jQuery.parseJSON(file.xhr.response);
+
+			myDropzone.removeFile(file);
+			$("#LDDUpload_progress").hide();
+
+			if (data.success != true) {
+
+				//There was an error. Add the text...
+				$("#LDDUpload_error > p").html("Error: " + data.msg);
+
+				//...add more text for some error codes...
+				if (data.errorCode == 415) {
+					$("#LDDUpload_error > p").append(" (File type detected : "+data.errorDetail+")");
+				}
+
+				//Add the error code
+				$("#LDDUpload_error > p").append(" - Error code "+data.errorCode);
+
+				//...show it..
+				$("#LDDUpload_error").show();
+
+				//...and resetting everything
+				cancelLDDUpload();
+
+			} else {
+
+				//Send the info to the app
+				App.LDDUpload.processLDDData(data, file.name);
+			}
+		});
+	})
+
+
+	function cancelLDDUpload() {
+
+		$("#LDDUpload_dropzone").show();
+
+		//Reset some app stuff
+		App.LDDUpload.resetVars();
+		App.LDDUpload.UI_resetLDDPannel();
+
+		//Reset the upload progress
+		$("#LDDUpload_progress > div").css("width", "0%");
+	}
+</script>
+
+<script src="assets/js/dropzone.js"></script>
+<script>
+	// Disable auto discover for all elements:
+	Dropzone.autoDiscover = false;
+</script>
