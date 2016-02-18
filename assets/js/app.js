@@ -220,6 +220,8 @@ PBHelper.prototype.LDDUpload = function() {
 	this.LDDUpload.numberElements = 0;
 	this.LDDUpload.PartsValue = 0;
 
+	this.LDDUpload.SetList = new Array;
+
 	/*
 	 * LDDUpload UI svariables
 	 */
@@ -241,6 +243,8 @@ PBHelper.prototype.LDDUpload = function() {
 		this.numberBricks = 0;
 		this.numberElements = 0;
 		this.PartsValue = 0;
+
+		this.SetList = new Array;
 	}
 
 	//This function process the data received from the file and call the UI for display
@@ -343,6 +347,7 @@ PBHelper.prototype.LDDUpload = function() {
 
 						//We send our default data with the found brick and the base url
 						BrickData = $.extend(BrickData, data.Bricks[found_brick], {"baseUrl" : data.ImageBaseUrl});
+
 					} else if (data != null) {
 
 						//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
@@ -355,6 +360,9 @@ PBHelper.prototype.LDDUpload = function() {
 						$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
 						BrickData
 					);
+
+					//! TEST
+					_this.SetList.push(BrickData);
 
 					//We update the progress
 				    currentPart++;
@@ -376,6 +384,19 @@ PBHelper.prototype.LDDUpload = function() {
 				//console.log("this.LDDUpload.Analyse AJAX", data);
 			});
 		});
+	}
+
+	this.LDDUpload.testString = function() {
+		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
+		$.each(this.SetList, function(i,brick) {
+			if (brick.SQty >= brick.nbReq) {
+				for (i = 0; i < brick.nbReq; i++) {
+					reponse = reponse + 'a.addToBasket(' + JSON.stringify(brick) + ', b);';
+				}
+			}
+		});
+		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
+		console.log(reponse);
 	}
 
 	//This function is called when all parts are analysed. Show the table and set the UI
