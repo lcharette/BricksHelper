@@ -149,7 +149,21 @@ function PBHelper (options) {
 		}
 
 		//Copy the line
-		$(template).find(".templateTable_row").clone().removeAttr('id').appendTo(destination);
+		var t = $(template).find(".templateTable_row").clone();
+
+		//Change the ID
+		$(t).attr('id', brickData.ItemNo + "-" + brickData.colorCode);
+
+		//Add the sort info to the line
+		$(t).data('designid', brickData.DesignId);
+		$(t).data('elementid', brickData.ItemNo);
+		$(t).data('qte', brickData.nbReq);
+		$(t).data('color', color_name);
+		$(t).data('price', brickData.Price);
+		$(t).data('total', brickData.Price * brickData.nbReq);
+
+		//Add the copied line to the template
+		$(t).appendTo(destination);
 
 		//Because the temp,late will retain the class if we don't remove it
 		$(template).find(".templateTable_row").find(".asset").find("img").removeClass("bw-image");
@@ -186,6 +200,57 @@ function PBHelper (options) {
 				'title': pageTitle
 			});
 		}
+	}
+
+	this.SortTable = function(TableSource, SortBy, Order) {
+
+		//Build a list of all the items in the table
+		var rowList = new Object();
+		$.each($(TableSource + " > tr"), function (i, row) {
+			rowList[$(row).attr('id')] = $(row).data(SortBy);
+		});
+
+		//Sort everything
+		//Source: http://stackoverflow.com/questions/1069666/sorting-javascript-object-by-property-value
+		var rowListSorted = [];
+		for (var row in rowList) {
+		      rowListSorted.push([row, rowList[row]]);
+		}
+
+		if (SortBy == "color") {
+			rowListSorted.sort(function(a, b) {
+				var aa = a[1];
+				var bb = b[1];
+				return aa.toLowerCase().localeCompare(bb.toLowerCase());
+			});
+		} else {
+			rowListSorted.sort(function(a, b) {return a[1] - b[1]});
+		}
+
+		//The sort need an array. We build back an object
+		var temp = new Object();
+		for (var i = 0; i < rowListSorted.length; ++i) {
+			var row = rowListSorted[i];
+		    temp[row[0]] = row[1];
+		}
+
+		//Create a temp table
+		$('body').append('<table class="hidden" id="tempTable"/>');
+
+		//Move everything to a new temp table
+		$.each(temp, function(id, value) {
+			if (Order == "DESC") {
+				$("#tempTable").prepend( $("#"+id) );
+			} else {
+				$("#tempTable").append( $("#"+id) );
+			}
+		});
+
+		//move the temp table content
+		$(TableSource).append( $("#tempTable > tbody > tr") );
+
+		//Remove the temps table
+		$("#tempTable").remove();
 	}
 
 	/*
@@ -274,7 +339,7 @@ PBHelper.prototype.LDDUpload = function() {
 			$.each(color_data, function( colorCode, NbRequired ){
 
 				_this.parent.AddPartsTableRow(
-					$(_this.UI.Main).find(_this.UI.LDDPannel + " > table"),	// Destination
+					$(_this.UI.Main).find(_this.UI.LDDPannel + " > table > tbody"),	// Destination
 					$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
 					{														// BricksData
 						"DesignId" : DesignId,
@@ -356,7 +421,7 @@ PBHelper.prototype.LDDUpload = function() {
 
 					//5° Add line to the mighty table
 					_this.parent.AddPartsTableRow(
-						$(_this.UI.Main).find(_this.UI.LDDPannel + " > table"),	// Destination
+						$(_this.UI.Main).find(_this.UI.LDDPannel + " > table > tbody"),	// Destination
 						$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
 						BrickData
 					);
@@ -420,7 +485,7 @@ PBHelper.prototype.LDDUpload = function() {
 		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").find(".txtTotal").html(this.parent.roundPrice(this.PartsValue)+" $");
 
 		//We copy it to the pannel
-		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.LDDPannel + " > table"));
+		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.LDDPannel + " > table > tfoot"));
 	}
 
 	/*
@@ -501,6 +566,10 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function hide the analyser progress bar.
 	this.LDDUpload.UI_Progress_done = function() {
 		$(this.UI.Main).find(this.UI.Progress).hide();
+	}
+
+	this.LDDUpload.SortTable = function(SortBy, Order) {
+		this.parent.SortTable(this.UI.LDDPannel + " > table > tbody", SortBy, Order);
 	}
 }
 
@@ -599,7 +668,7 @@ PBHelper.prototype.SetSearch = function() {
 
 						//2° Add the table row
 						_this.parent.AddPartsTableRow(
-							$(_this.UI.Main).find(createdPannelID + " > table"),	// Destination
+							$(_this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
 							$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
 							BrickData
 						);
@@ -803,7 +872,7 @@ PBHelper.prototype.BrickSearch = function() {
 
 						//2° Add the table row
 						_this.parent.AddPartsTableRow(
-							$(_this.UI.Main).find(createdPannelID + " > table"),	// Destination
+							$(_this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
 							$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
 							BrickData
 						);
