@@ -144,7 +144,7 @@ function PBHelper (options) {
 
 		//4° No error were found...
 		} else {
-			$(template).find(".templateTable_row").find(".price").html(brickData.Price + brickData.CId);
+			$(template).find(".templateTable_row").find(".price").html(this.roundPrice(brickData.Price) + brickData.CId);
 			$(template).find(".templateTable_row").find(".priceTotal").html(this.roundPrice(brickData.Price*brickData.nbReq) + brickData.CId);
 		}
 
@@ -204,7 +204,7 @@ function PBHelper (options) {
 
 
 /*
- * LDDUpload
+ //! LDD Upload
  */
 PBHelper.prototype.LDDUpload = function() {
 
@@ -505,7 +505,7 @@ PBHelper.prototype.LDDUpload = function() {
 }
 
 /*
- * SetSearch
+ //! SET SEARCH
  */
 PBHelper.prototype.SetSearch = function() {
 
@@ -713,8 +713,9 @@ PBHelper.prototype.SetSearch = function() {
 }
 
 /*
- * BrickSearch
+ //! BRICK SEARCH
  */
+
 PBHelper.prototype.BrickSearch = function() {
 
 	//Keep a link to PBHelper
