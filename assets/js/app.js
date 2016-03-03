@@ -538,15 +538,15 @@ PBHelper.prototype.LDDUpload = function() {
 		omitDestroy = omitDestroy || false;
 
 		if (omitDestroy) {
-			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD").attr('disabled', 'disabled');
+			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-sortLDD").attr('disabled', 'disabled');
 		} else {
-			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD").attr('disabled', 'disabled');
+			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD, .btn-sortLDD").attr('disabled', 'disabled');
 		}
 	}
 
 	//This function reset the buttons state
 	this.LDDUpload.UI_resetButtons = function() {
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD").removeAttr('disabled');
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD, .btn-sortLDD").removeAttr('disabled');
 	}
 
 	//This function set the analyser progress bar
