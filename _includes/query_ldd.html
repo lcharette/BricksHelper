@@ -33,6 +33,37 @@
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
 		<button class="btn btn-default btn-previewLDD" onclick="App.LDDUpload.Preview();"><i class="fa fa-eye"></i> Preview parts found</button>
 		<button class="btn btn-primary btn-analyseLDD" onclick="App.LDDUpload.Analyse();"><i class="fa fa-search"></i> Find model value</button>
+		<!-- Sort button -->
+		<div class="btn-group pull-right">
+		  <button type="button" class="btn btn-default dropdown-toggle btn-sortLDD" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		    <i class="fa fa-filter"></i> <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+			<li class="dropdown-header">Sort by price</li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("price", "ASC")'>Ascending <i class="fa fa-sort-amount-asc "></i></a></li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("price", "DESC")'>Decending <i class="fa fa-sort-amount-desc"></i></a></li>
+
+		    <li class="dropdown-header">Sort by total price</li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("total", "ASC")'>Ascending <i class="fa fa-sort-amount-asc"></i></a></li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("total", "DESC")'>Decending <i class="fa fa-sort-amount-desc"></i></a></a></li>
+
+		    <li class="dropdown-header">Sort by Design ID</li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("designid", "ASC")'>Ascending <i class="fa fa-sort-amount-asc"></i></a></li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("designid", "DESC")'>Decending <i class="fa fa-sort-amount-desc"></i></a></a></li>
+
+		    <li class="dropdown-header">Sort by Element number</li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("elementid", "ASC")'>Ascending <i class="fa fa-sort-amount-asc"></i></a></li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("elementid", "DESC")'>Decending <i class="fa fa-sort-amount-desc"></i></a></a></li>
+
+		    <li class="dropdown-header">Sort by quantity</li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("qte", "ASC")'>Ascending <i class="fa fa-sort-amount-asc"></i></a></li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("qte", "DESC")'>Decending <i class="fa fa-sort-amount-desc"></i></a></a></li>
+
+		    <li class="dropdown-header">Sort by color</li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("color", "ASC")'>Ascending <i class="fa fa-sort-amount-asc"></i></a></li>
+		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("color", "DESC")'>Decending <i class="fa fa-sort-amount-desc"></i></a></a></li>
+		  </ul>
+		</div>
 
 		<div class="progress" id="analyseLDD_progress" style="display: none; margin-top: 20px;">
 		  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
@@ -42,13 +73,17 @@
 
 	<!-- Table -->
 	<table class="table table-bordered ListTable" style="display:none">
-		<tr>
-			<th>Image</th>
-			<th>Brick info</th>
-			<th>Qte used</th>
-			<th>Unit price</th>
-			<th>Total price</th>
-		</tr>
+		<thead>
+			<tr>
+				<th>Image</th>
+				<th>Brick info</th>
+				<th>Qte used</th>
+				<th>Unit price</th>
+				<th>Total price</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+		<tfoot></tfoot>
 	</table>
 </div>
 
