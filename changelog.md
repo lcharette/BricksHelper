@@ -4,10 +4,13 @@ title: Changelog
 permalink: /changelog/
 ---
 
-### Feb 15th 2016
+### March 3rd 2016
+* Added sorting to LDD upload results
+
+### February 15th 2016
 * Added [FAQ](/faq) page
 
-### Feb 13th 2016
+### February 13th 2016
 * Initial release
 
 # Features wishlist
