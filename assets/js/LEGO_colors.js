@@ -100,7 +100,7 @@ var LEGO_Color = {
     "Name": "Transparent"
   },
   "41": {
-    "LegoID": "Tr. Red",
+    "LegoID": "Tr.Red",
     "Name": "Tr. Red"
   },
   "42": {
