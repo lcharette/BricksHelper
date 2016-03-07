@@ -119,12 +119,18 @@ function PBHelper (options) {
 		$(template).find(".templateTable_row").find(".desc").html(brickData.ItemDescr);
 		$(template).find(".templateTable_row").find(".color").html(color_name);
 
+		//Some var for later
+		var elementPrice = 0;
+
 		//We try to format the error
 		//1° LEGO_PartNotAvailable :: Part element found (color found), but not in stock. Price will be "-1"
 		if (brickData.Price == -1 && !preview) {
 			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartNotAvailable").clone();
 			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
 			$(template).find(".templateTable_row").find(".priceTotal").html("-");
+
+			//We also change the color code to help sorting
+			elementPrice = "-1";
 
 		//2° LEGO_PartColorNotFound :: Part desing ID was found, but no color match. ElementID will be empty
 		} else if (brickData.ItemNo == "" && brickData.ItemDescr != "" && !preview) {
@@ -135,6 +141,9 @@ function PBHelper (options) {
 			//We will aso modify the image class
 			$(template).find(".templateTable_row").find(".asset").find("img").addClass("bw-image");
 
+			//We also change the color code to help sorting
+			elementPrice = "-2";
+
 
 		//3° LEGO_PartNotFound :: Part description was not found.
 		} else if (brickData.ItemDescr == "" && !preview) {
@@ -142,10 +151,16 @@ function PBHelper (options) {
 			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
 			$(template).find(".templateTable_row").find(".priceTotal").html("-");
 
+			//We also change the color code to help sorting
+			elementPrice = "-3";
+
 		//4° No error were found...
 		} else {
 			$(template).find(".templateTable_row").find(".price").html(this.roundPrice(brickData.Price) + brickData.CId);
 			$(template).find(".templateTable_row").find(".priceTotal").html(this.roundPrice(brickData.Price*brickData.nbReq) + brickData.CId);
+
+			//We also change the color code to help sorting
+			elementPrice = brickData.Price;
 		}
 
 		//Copy the line
@@ -159,7 +174,7 @@ function PBHelper (options) {
 		$(t).data('elementid', brickData.ItemNo);
 		$(t).data('qte', brickData.nbReq);
 		$(t).data('color', color_name);
-		$(t).data('price', brickData.Price);
+		$(t).data('price', elementPrice);
 		$(t).data('total', brickData.Price * brickData.nbReq);
 
 		//Add the copied line to the template

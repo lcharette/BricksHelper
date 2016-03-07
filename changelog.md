@@ -4,7 +4,9 @@ title: Changelog
 permalink: /changelog/
 ---
 
-### March 4rd 2016
+### March 6th 2016
+* Fix detection of bricks composed of multiple parts
+* Improved sorting
 * Fix color mismatch for Tr.Red parts
 
 ### March 3rd 2016

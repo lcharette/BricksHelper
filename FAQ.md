@@ -12,7 +12,6 @@ permalink: /faq/
 
 ### What are the limitations of this tool?
 * Huge LDD model (biggest I tried was 4200 pieces)
-* [Multi-parts elements](#why-are-multi-parts-element-are-split-when-analysing-ldd)
 * [Multicolored elements](#why-are-multicoloured-parts-are-not-automatically-found-)
 * Decorations
 * Some colours might not match properly. Let me know if you 
@@ -31,12 +30,8 @@ The LDD files are analyzed and then destroyed.
 LDD stands for [Lego Digital Designer](http://ldd.lego.com/)
 
 
-### Why are multi-parts element are split when analysing LDD? 
-LDD file separate the multi-parts in their base elements which numbers are different from the assembled element ID. I'm working on that ;) 
-
-
-### Why are multicoloured parts are not automatically found ?
-Matching those multicoloured parts to the Lego website is tricky because they don't use a straightforward color code. Working on that too.
+### Why are multicoloured parts are not automatically found?
+Matching those multicoloured parts to the Lego website is tricky because they don't use a straightforward color code. You have to keep and eye on those and modify them manually.
 
 
 ### Why do I need to select a countries? 

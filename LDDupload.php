@@ -109,21 +109,21 @@
 	 */
 	function processBricks($brick_data, &$return_bricks, &$nb_elements, &$total_bricks) {
 
-		if (empty($brick_data['Part']['@attributes'])) {
+		//Cas N°1 : On vérifie si parts est déjà disponible sous brick. Si non, ca veut dire qu'on a une brique avec plusieurs
+		//          parts. Donc on prend la couleur de la première sous-part
+		if (empty($brick_data['Part']['@attributes']["materials"])) {
 
-			//On descend chercher les parts
-			foreach ($brick_data['Part'] as $parts_data) {
+			$color = $brick_data['Part'][0]["@attributes"]["materials"];
 
-				$return_bricks = AddToBrickList($return_bricks, $parts_data["@attributes"]["designID"], $parts_data["@attributes"]["materials"], $nb_elements);
-				$total_bricks++;
-
-			}
+		//Cas N°2 : On a pas de sous part, on prend donc donc l'unique part sous brick
+		//          On ne prend pas la couleur dans la brique, car elle pourrait être fausse ou whatever
 		} else {
 
-			$return_bricks = AddToBrickList($return_bricks, $brick_data['Part']["@attributes"]["designID"], $brick_data['Part']["@attributes"]["materials"], $nb_elements);
-			$total_bricks++;
-
+			$color = $brick_data['Part']["@attributes"]["materials"];
 		}
+
+		$return_bricks = AddToBrickList($return_bricks, $brick_data["@attributes"]["designID"], $color, $nb_elements);
+		$total_bricks++;
 
 	}
 

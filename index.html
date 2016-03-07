@@ -40,5 +40,9 @@ layout: default
 		});
 	});
 </script>
+{% if jekyll.environment == 'production' %}
+<script src="assets/js/app.min.js"></script>
+{% else %}
 <script src="assets/js/app.js"></script>
+{% endif %}
 <script src="assets/js/LEGO_colors.js"></script>
