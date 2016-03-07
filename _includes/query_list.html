@@ -1,0 +1,51 @@
+<h1 class="fit"><small>My lists</small></h1>
+
+<div class="progressDiv">
+	<i class="fa fa-spinner fa-spin fa-3x"></i>
+</div>
+
+<div class="panel panel-default panel-primary loginPanel" style="display: none;">
+  <div class="panel-heading">Login</div>
+  <div class="content">
+	  <form action="javascript:void(0);" onsubmit="App.List.Login(this)">
+	  <div class="form-group">
+	    <label for="exampleInputEmail1">Email address</label>
+	    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
+	  </div>
+	  <div class="form-group">
+	    <label for="exampleInputPassword1">Password</label>
+	    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+	  </div>
+	  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+	  <button type="button" class="btn btn-default btn-block" onclick="App.List.UI_ShowRegister()">Register</button>
+	  <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+	  </form>
+  </div>
+</div>
+
+<div class="panel panel-default panel-primary registerPanel" style="display: none;">
+  <div class="panel-heading">Register</div>
+  <div class="content">
+	  <form action="javascript:void(0);" onsubmit="App.List.Register(this)">
+	  <div class="form-group">
+	    <label for="registerName">Your name</label>
+	    <input type="text" class="form-control" id="registerName" name="name" placeholder="Your name" maxlength="200">
+	  </div>
+	  <div class="form-group">
+	    <label for="registerEmail">Email address</label>
+	    <input type="email" class="form-control" id="registerEmail" name="email" placeholder="Email" maxlength="200">
+	  </div>
+	  <div class="form-group">
+	    <label for="registerPassword">Password</label>
+	    <input type="password" class="form-control" id="registerPassword" name="password1" placeholder="Password">
+	  </div>
+	  <div class="form-group">
+	    <label for="registerPassword1">Confirm password</label>
+	    <input type="password" class="form-control" id="registerPassword1" name="password2" placeholder="Confirm password">
+	  </div>
+	  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+	  <button type="button" class="btn btn-default btn-block" onclick="App.List.UI_ShowLogin()">Cancel</button>
+	  <button type="submit" class="btn btn-primary btn-lg btn-block">Register</button>
+	  </form>
+  </div>
+</div>

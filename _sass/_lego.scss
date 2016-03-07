@@ -51,3 +51,18 @@ i.LEGO_PartNotAvailable { color: black; }
 label > small {
 	color: grey;
 }
+
+/*
+ * My list
+ */
+
+.nav-app-list > .loginPanel,
+.nav-app-list > .registerPanel {
+	width: 70%;
+	margin-left: 15%;
+}
+
+.nav-app-list > .loginPanel > .content,
+.nav-app-list > .registerPanel > .content {
+	padding: 25px;
+}

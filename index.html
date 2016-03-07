@@ -12,6 +12,7 @@ layout: default
 		  <li role="presentation" class="active nav-app-ldd"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-ldd"><i class="fa fa-cloud-upload"></i> LDD import</a></li>
 		  <li role="presentation" class="nav-app-sets"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-sets"><i class="fa fa-archive"></i> Search by sets</a></li>
 		  <li role="presentation" class="nav-app-bricks"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-bricks"><i class="fa fa-puzzle-piece"></i> Search by bricks</a></li>
+		  <li role="presentation" class="nav-app-list"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-list"><i class="fa fa-list"></i> My lists</a></li>
 		</ul>
 	</div>
 
@@ -19,6 +20,7 @@ layout: default
 		<div class="nav-app-ldd">{% include query_ldd.html %}</div>
 		<div class="nav-app-sets" style="display: none">{% include query_sets.html %}</div>
 		<div class="nav-app-bricks" style="display: none">{% include query_bricks.html %}</div>
+		<div class="nav-app-list" style="display: none">{% include query_list.html %}</div>
 	</div>
 </div>
 
@@ -36,7 +38,8 @@ layout: default
 		App = new PBHelper ({
 			"LLDUpload_interface" : ".nav-app-ldd",
 			"SetSearch_interface" : ".nav-app-sets",
-			"BrickSearch_interface" : ".nav-app-bricks"
+			"BrickSearch_interface" : ".nav-app-bricks",
+			"List_interface" : ".nav-app-list"
 		});
 	});
 </script>

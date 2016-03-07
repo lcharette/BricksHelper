@@ -4,6 +4,7 @@ function PBHelper (options) {
     this.options = options;
     this.sets_base_url = "getproduct.php?productnumber=";
 	this.bricks_base_url = "getitemordesign.php?getitemordesign=";
+	this.users_base_url = "users.php";
 	this.defaultImage = "assets/img/defaultimg.gif";
 	this.country = "";
 
@@ -18,6 +19,10 @@ function PBHelper (options) {
 	}
 	if (this.options.BrickSearch_interface == "") {
 		console.log("PBHELPER ERROR", "Non optinal option missing", "BrickSearch_interface");
+		return;
+	}
+	if (this.options.List_interface == "") {
+		console.log("PBHELPER ERROR", "Non optinal option missing", "List_interface");
 		return;
 	}
 
@@ -276,6 +281,7 @@ function PBHelper (options) {
 	this.LDDUpload();
 	this.SetSearch();
 	this.BrickSearch();
+	this.List();
 	this.Navigation();
 
 	//Setup default country
@@ -827,7 +833,7 @@ PBHelper.prototype.BrickSearch = function() {
 	};
 
 	/*
-	 * LDDUpload main Functions
+	 * BrickSearch main Functions
 	 */
 
 	this.BrickSearch.Search = function() {
@@ -1018,6 +1024,101 @@ PBHelper.prototype.BrickSearch = function() {
 		}
 	}
 }
+
+/*
+ //! LIST
+ */
+
+PBHelper.prototype.List = function() {
+
+	//Keep a link to PBHelper
+	this.List.parent = this;
+
+	/*
+	 * List variables
+	 */
+
+
+	/*
+	 * List UI variables
+	 */
+
+	this.List.UI = {
+		"Main"			: this.options.List_interface,
+		"Spinner"		: ".progressDiv",
+		"Login"			: ".loginPanel",
+		"Register"		: ".registerPanel"
+	};
+
+	/*
+	 * Main Functions
+	 */
+
+	 this.List.Login = function() {
+
+	 }
+
+	this.List.Register = function(formElement) {
+
+		//Reset the error
+		$(this.UI.Main).find(this.UI.Register).find(".alert").hide();
+		$(this.UI.Main).find(this.UI.Register).find(".alert > span").html("");
+
+		 //Get all the data
+		 var name = $(formElement).find('[name="name"]').val();
+		 var email = $(formElement).find('[name="email"]').val();
+		 var pass1 = $(formElement).find('[name="password1"]').val();
+		 var pass2 = $(formElement).find('[name="password2"]').val();
+
+		 //Check if all field have something in it
+		 if (name.length == 0 || email.length == 0 || pass1.length == 0 || pass2.length == 0) {
+			 $(this.UI.Main).find(this.UI.Register).find(".alert").show();
+			 $(this.UI.Main).find(this.UI.Register).find(".alert > span").html("Please fill in all the fields");
+			 return;
+		 }
+
+		 //Check if the two password are the same
+		 if (pass1 != pass2) {
+			 $(this.UI.Main).find(this.UI.Register).find(".alert").show();
+			 $(this.UI.Main).find(this.UI.Register).find(".alert > span").html("The two password are not the same");
+			 return;
+		 }
+
+		 //users_base_url
+
+
+		 console.log('temp', name);
+	 }
+
+	 /*
+	 * UI Functions
+	 */
+
+	this.List.UI_ShowSpinner = function() {
+		$(this.UI.Main).find(this.UI.Spinner).show();
+		$(this.UI.Main).find(this.UI.Login).hide();
+		$(this.UI.Main).find(this.UI.Register).hide();
+	}
+
+	this.List.UI_ShowRegister = function() {
+		$(this.UI.Main).find(this.UI.Spinner).hide();
+		$(this.UI.Main).find(this.UI.Login).hide();
+		$(this.UI.Main).find(this.UI.Register).show();
+	}
+
+	this.List.UI_ShowLogin = function() {
+		$(this.UI.Main).find(this.UI.Spinner).hide();
+		$(this.UI.Main).find(this.UI.Login).show();
+		$(this.UI.Main).find(this.UI.Register).hide();
+	}
+
+	//Must check ig we're already loged in
+	this.List.UI_ShowLogin();
+}
+
+/*
+ //! BRICK SEARCH
+ */
 
 PBHelper.prototype.Navigation = function() {
 
