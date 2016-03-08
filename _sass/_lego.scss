@@ -66,3 +66,12 @@ label > small {
 .nav-app-list > .registerPanel > .content {
 	padding: 25px;
 }
+
+.nav-app-list .accountGear {
+	line-height: 27px;
+	cursor: pointer;
+}
+
+.nav-app-list .open .accountGear {
+	color: black;
+}

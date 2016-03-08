@@ -1047,48 +1047,171 @@ PBHelper.prototype.List = function() {
 		"Main"			: this.options.List_interface,
 		"Spinner"		: ".progressDiv",
 		"Login"			: ".loginPanel",
-		"Register"		: ".registerPanel"
+		"Register"		: ".registerPanel",
+		"Mainlist"		: ".mainlist",
 	};
 
 	/*
 	 * Main Functions
 	 */
 
-	 this.List.Login = function() {
+	this.List.Login = function(formElement) {
 
-	 }
+		//Reset the error
+		$(this.UI.Main).find(this.UI.Login).find(".alert-danger").hide();
+		$(this.UI.Main).find(this.UI.Login).find(".alert-danger > span").html("");
+
+		//Disable button
+		$(this.UI.Main).find(this.UI.Login).find(".btn").attr('disabled', 'disabled');
+
+		//Get all the data
+		var email = $(formElement).find('[name="email"]').val();
+		var pass = $(formElement).find('[name="password"]').val();
+
+		//Check if all field have something in it
+		if (email.length == 0 || pass.length == 0) {
+		 $(this.UI.Main).find(this.UI.Login).find(".alert-danger").show();
+		 $(this.UI.Main).find(this.UI.Login).find(".alert-danger > span").html("Please fill in all the fields");
+		 $(this.UI.Main).find(this.UI.Login).find(".btn").removeAttr('disabled');
+		 return;
+		}
+
+		//We keep this secured
+		var _this = this;
+
+		//We send to PHP
+		$.post( this.parent.users_base_url + "?action=login", {
+			'email': email,
+			'pass': pass,
+		}, function( data ) {
+
+			//Convert JSON
+			var data = $.parseJSON(data);
+
+			//Enabled buttons
+			$(_this.UI.Main).find(_this.UI.Login).find(".btn").removeAttr('disabled');
+
+			//Process data
+			if (!data.success) {
+				$(_this.UI.Main).find(_this.UI.Login).find(".alert-danger").show();
+				$(_this.UI.Main).find(_this.UI.Login).find(".alert-danger > span").html("Email & password combinasion doesn't match");
+				return;
+			} else {
+				_this.LoadUsers();
+			}
+		});
+
+	}
 
 	this.List.Register = function(formElement) {
 
 		//Reset the error
-		$(this.UI.Main).find(this.UI.Register).find(".alert").hide();
-		$(this.UI.Main).find(this.UI.Register).find(".alert > span").html("");
+		$(this.UI.Main).find(this.UI.Register).find(".alert-danger").hide();
+		$(this.UI.Main).find(this.UI.Register).find(".alert-danger > span").html("");
 
-		 //Get all the data
-		 var name = $(formElement).find('[name="name"]').val();
-		 var email = $(formElement).find('[name="email"]').val();
-		 var pass1 = $(formElement).find('[name="password1"]').val();
-		 var pass2 = $(formElement).find('[name="password2"]').val();
+		//Disable button
+		$(this.UI.Main).find(this.UI.Register).find(".btn").attr('disabled', 'disabled');
 
-		 //Check if all field have something in it
-		 if (name.length == 0 || email.length == 0 || pass1.length == 0 || pass2.length == 0) {
-			 $(this.UI.Main).find(this.UI.Register).find(".alert").show();
-			 $(this.UI.Main).find(this.UI.Register).find(".alert > span").html("Please fill in all the fields");
-			 return;
-		 }
+		//Get all the data
+		var name = $(formElement).find('[name="name"]').val();
+		var email = $(formElement).find('[name="email"]').val();
+		var pass1 = $(formElement).find('[name="password1"]').val();
+		var pass2 = $(formElement).find('[name="password2"]').val();
 
-		 //Check if the two password are the same
-		 if (pass1 != pass2) {
-			 $(this.UI.Main).find(this.UI.Register).find(".alert").show();
-			 $(this.UI.Main).find(this.UI.Register).find(".alert > span").html("The two password are not the same");
-			 return;
-		 }
+		//Check if all field have something in it
+		if (name.length == 0 || email.length == 0 || pass1.length == 0 || pass2.length == 0) {
+		 $(this.UI.Main).find(this.UI.Register).find(".alert-danger").show();
+		 $(this.UI.Main).find(this.UI.Register).find(".alert-danger > span").html("Please fill in all the fields");
+		 $(this.UI.Main).find(this.UI.Register).find(".btn").removeAttr('disabled');
+		 return;
+		}
 
-		 //users_base_url
+		//Check if the two password are the same
+		if (pass1 != pass2) {
+		 $(this.UI.Main).find(this.UI.Register).find(".alert-danger").show();
+		 $(this.UI.Main).find(this.UI.Register).find(".alert-danger > span").html("The two password are not the same");
+		 $(this.UI.Main).find(this.UI.Register).find(".btn").removeAttr('disabled');
+		 return;
+		}
 
+		//We keep this secured
+		var _this = this;
 
-		 console.log('temp', name);
+		//We send to PHP
+		$.post( this.parent.users_base_url + "?action=register", {
+			'name': name,
+			'email': email,
+			'pass1': pass1,
+			'pass2': pass2
+		}, function( data ) {
+
+			//Convert JSON
+			var data = $.parseJSON(data);
+
+			//Enabled buttons
+			$(_this.UI.Main).find(_this.UI.Register).find(".btn").removeAttr('disabled');
+
+			//Process data
+			if (!data.success) {
+				$(_this.UI.Main).find(_this.UI.Register).find(".alert-danger").show();
+				$(_this.UI.Main).find(_this.UI.Register).find(".alert-danger > span").html("This email is already registered");
+				return;
+			} else {
+				_this.UI_ShowLogin("Account registered successfully! You can now login.");
+			}
+		});
 	 }
+
+	this.List.LoadUsers = function() {
+
+		//Show the spinner
+		this.UI_ShowSpinner();
+
+		//We keep this secured
+		var _this = this;
+
+		//We get user data
+		$.post( this.parent.users_base_url + "?action=List", function( reponse ) {
+
+			//Convert JSON
+			var reponse = $.parseJSON(reponse);
+
+			//Process reponse
+			if (reponse.success) {
+
+				console.log("LoadUsers", reponse.data.userdata, reponse.data.userlists);
+				_this.setupMainList(reponse.data.userdata, reponse.data.userlists);
+
+			} else if (!reponse.success && reponse.errorCode == 406) {
+
+				_this.UI_ShowLogin();
+
+			} else {
+				console.log("ERROR", reponse);
+			}
+		});
+	}
+
+	this.List.Logout = function() {
+
+		//We keep this secured
+		var _this = this;
+
+		//We get user data
+		$.post( this.parent.users_base_url + "?action=logout", function( reponse ) {
+			_this.LoadUsers();
+		});
+	}
+
+	this.List.setupMainList = function(userdata, userlists) {
+
+		//Setup the pannel header
+		$(this.UI.Main).find(this.UI.Mainlist).find("h3 span").html(userdata.username);
+
+		//Show the list
+		this.UI_ShowMain();
+
+	}
 
 	 /*
 	 * UI Functions
@@ -1098,22 +1221,39 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Spinner).show();
 		$(this.UI.Main).find(this.UI.Login).hide();
 		$(this.UI.Main).find(this.UI.Register).hide();
+		$(this.UI.Main).find(this.UI.Mainlist).hide();
 	}
 
 	this.List.UI_ShowRegister = function() {
 		$(this.UI.Main).find(this.UI.Spinner).hide();
 		$(this.UI.Main).find(this.UI.Login).hide();
 		$(this.UI.Main).find(this.UI.Register).show();
+		$(this.UI.Main).find(this.UI.Mainlist).hide();
 	}
 
-	this.List.UI_ShowLogin = function() {
+	this.List.UI_ShowLogin = function(successMsg) {
 		$(this.UI.Main).find(this.UI.Spinner).hide();
 		$(this.UI.Main).find(this.UI.Login).show();
 		$(this.UI.Main).find(this.UI.Register).hide();
+		$(this.UI.Main).find(this.UI.Mainlist).hide();
+
+		if (successMsg) {
+			$(this.UI.Main).find(this.UI.Login).find(".alert-success").show();
+			$(this.UI.Main).find(this.UI.Login).find(".alert-success > span").html(successMsg);
+		} else {
+			$(this.UI.Main).find(this.UI.Login).find(".alert-success").hide();
+		}
+	}
+
+	this.List.UI_ShowMain = function() {
+		$(this.UI.Main).find(this.UI.Spinner).hide();
+		$(this.UI.Main).find(this.UI.Login).hide();
+		$(this.UI.Main).find(this.UI.Register).hide();
+		$(this.UI.Main).find(this.UI.Mainlist).show();
 	}
 
 	//Must check ig we're already loged in
-	this.List.UI_ShowLogin();
+	this.List.LoadUsers();
 }
 
 /*
