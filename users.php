@@ -73,6 +73,14 @@ $session = new session();
 		break;
 		case 'login':
 
+			//Check if already loggedin
+			if ($session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 407,
+					'msg' => "Already logged",
+				));
+			}
+
 			//Get all the data
 			$email = request_var('email', '');
 			$pass = request_var('pass', '');
@@ -128,6 +136,41 @@ $session = new session();
 		case 'logout':
 
 			$session->logout();
+
+		break;
+
+		case 'createList':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'msg' => "Not logged in",
+				));
+			}
+
+			//Get the list name
+			$listName = request_var('listName', '');
+
+			//Check for empty name
+			if ($listName == "") {
+				returnPage(array(
+					'errorCode' => 409,
+					'msg' => "List name can't be blank",
+				));
+			}
+
+			//Ok, on ajoute dans MySQL
+			$MySQL->insert("userlists", array(
+				"user_id" 		=> $session->user['data']['user_id'],
+				"listName"		=> addslashes($listName),
+				"createdOn"		=> time(),
+			));
+
+			//Retourne un succès
+			returnPage(array(
+				'success' 	=> true,
+			));
 
 		break;
 

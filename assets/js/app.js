@@ -1049,6 +1049,7 @@ PBHelper.prototype.List = function() {
 		"Login"			: ".loginPanel",
 		"Register"		: ".registerPanel",
 		"Mainlist"		: ".mainlist",
+		"Templates"		: "#list_template",
 	};
 
 	/*
@@ -1179,7 +1180,6 @@ PBHelper.prototype.List = function() {
 			//Process reponse
 			if (reponse.success) {
 
-				console.log("LoadUsers", reponse.data.userdata, reponse.data.userlists);
 				_this.setupMainList(reponse.data.userdata, reponse.data.userlists);
 
 			} else if (!reponse.success && reponse.errorCode == 406) {
@@ -1205,12 +1205,90 @@ PBHelper.prototype.List = function() {
 
 	this.List.setupMainList = function(userdata, userlists) {
 
+		console.log("LoadUsers", userdata, userlists);
+
 		//Setup the pannel header
 		$(this.UI.Main).find(this.UI.Mainlist).find("h3 span").html(userdata.username);
+
+		//Preserve this
+		var _this = this;
+
+		//Empty the
+		$(this.UI.Main).find(this.UI.Mainlist).find(".listsPlaceholder").html("");
+
+		//Go trought each liat title
+		$.each(userlists, function(i, list) {
+			console.log("userlist", i, list);
+
+			//Grab the template
+			var t = $(_this.UI.Main).find(_this.UI.Templates).find("#listElementTemplate").clone();
+
+			//First, remove the id
+			$(t).attr('id', '');
+
+			//Set the data inside template
+			$(t).find("h4").html(list.listName);
+			$(t).find("img").attr('src', _this.parent.defaultImage);
+			$(t).find("p.createdOn > span").html(list.createdOn);
+			$(t).find("p.nbPieces > span").html("0");
+
+			//Add to the DOM destination
+			$(t).appendTo($(_this.UI.Main).find(_this.UI.Mainlist).find(".listsPlaceholder"));
+		});
 
 		//Show the list
 		this.UI_ShowMain();
 
+	}
+
+	this.List.CreateList = function(formElement) {
+
+		//Ask for the list name
+		var listName = $(formElement).find('[name="listName"]').val();
+
+		//Check to see if line is empty
+		if (listName == "") {
+
+			//Use alert. I'm lazy
+			alert("List name can't be blank !");
+
+		} else {
+
+			//Preserve this
+			var _this = this;
+
+			//Desactivate buttons before sending to PHP
+			$(formElement).find(".btn").attr('disabled', 'disabled');
+
+			//Send to PHP!
+			$.post( this.parent.users_base_url + "?action=createList", {'listName' : listName}, function( reponse ) {
+
+				//Convert JSON
+				var reponse = $.parseJSON(reponse);
+
+				//Enable the buttons
+				$(formElement).find(".btn").removeAttr('disabled');
+
+				//Process reponse
+				if (reponse.success) {
+
+					//Empty the form
+					$(formElement).find('[name="listName"]').val("");
+
+					//Reset the forum
+					_this.UI_hideCreateList();
+
+					//Reload the list
+					_this.LoadUsers();
+
+				} else {
+
+					//Again, lazy. Using alert for the error.
+					//console.log("ERROR", reponse);
+					alert("An error occured : " + reponse.msg);
+				}
+			});
+		}
 	}
 
 	 /*
@@ -1250,6 +1328,26 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Login).hide();
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).show();
+	}
+
+	this.List.UI_showCreateList = function() {
+
+		//Hide the button
+		$(this.UI.Main).find(this.UI.Mainlist).find(".btn-showCreate").hide();
+
+		//Show the form
+		$(this.UI.Main).find(this.UI.Mainlist).find("#listCreateForm").show();
+
+	}
+
+	this.List.UI_hideCreateList = function() {
+
+		//Hide the button
+		$(this.UI.Main).find(this.UI.Mainlist).find(".btn-showCreate").show();
+
+		//Show the form
+		$(this.UI.Main).find(this.UI.Mainlist).find("#listCreateForm").hide();
+
 	}
 
 	//Must check ig we're already loged in

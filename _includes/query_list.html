@@ -13,8 +13,20 @@
 			</div>
 		</small>
 	</h3>
-	test
 
+	<div class="pull-right">
+		<button class="btn btn-success btn-showCreate" onclick="App.List.UI_showCreateList()"><i class="fa fa-plus"></i> Create new list</button>
+		<form action="javascript:void(0);" onsubmit="App.List.CreateList(this)" id="listCreateForm" style="display: none;" class="form-inline">
+			<div class="form-group">
+				<input type="text" class="form-control" placeholder="List name" name="listName" value="" />
+			</div>
+			<a href="javascript:void(0);" class="btn btn-default" onclick="App.List.UI_hideCreateList(this)">Cancel</a>
+			<input type="submit" class="btn btn-success" value="Create list">
+		</form>
+	</div>
+	<br clear="all" /><br />
+
+	<div class="listsPlaceholder"></div>
 </div>
 
 <div class="progressDiv">
@@ -66,4 +78,23 @@
 	  <button type="submit" class="btn btn-primary btn-lg btn-block">Register</button>
 	  </form>
   </div>
+</div>
+
+<div class="hidden" id="list_template">
+	<a id="listElementTemplate" href="#">
+		<div class="panel panel-default"><div class="panel-body">
+			<table>
+				<tr>
+					<td nowrap="nowrap" style="padding-right: 5px;"><img class="media-object" src="" alt=""></td>
+					<td width="100%">
+						<h4></h4>
+						<p class="createdOn">Created on: <span></span></p>
+						<p class="nbPieces">Number of parts: <span></span></p>
+					</td>
+					<td nowrap="nowrap" class="icon"><button class="btn btn-danger btn-small"><i class="fa fa-trash"></i></button></td>
+					<td nowrap="nowrap" class="icon"><i class="fa fa-chevron-right"></i></td>
+				</tr>
+			</table>
+		</div></div>
+	</a>
 </div>
