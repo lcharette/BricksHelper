@@ -1,13 +1,19 @@
 <?php
 
 $productNumber = $_GET['productnumber'];
+$country = $_GET['country'];
+
+//Default value for country
+if (!isset($country) || $country == "") {
+	$country = "CA";
+}
 
 // Create a stream
 $opts = array(
   'http'=>array(
     'method'=>"GET",
     'header'=>"Accept-language: en\r\n" .
-              "Cookie: csAgeAndCountry={'age':60,'countrycode':'CA'}\r\n"
+              "Cookie: csAgeAndCountry={'age':60,'countrycode':'".$country."'}\r\n"
   )
 );
 
