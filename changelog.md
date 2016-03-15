@@ -4,6 +4,11 @@ title: Changelog
 permalink: /changelog/
 ---
 
+### March 14th 2016
+* Fix country not working for set search
+* Added cookie to remember your country
+* Fix crash with empty result from LEGO website
+
 ### March 6th 2016
 * Fix detection of bricks composed of multiple parts
 * Improved sorting

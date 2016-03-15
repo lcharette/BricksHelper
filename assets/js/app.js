@@ -203,6 +203,9 @@ function PBHelper (options) {
 		//Update all the select on the page
 		$('.coutrySelect').removeAttr('selected');
 		$('.coutrySelect option[value='+country+']').attr('selected','selected');
+
+		//Set the cookie
+		this.cookieHelper.set("PBH_countryCode", country, 24*7);
 	}
 
 	//This function send the analitics data to Google Analitycs
@@ -277,9 +280,19 @@ function PBHelper (options) {
 	this.SetSearch();
 	this.BrickSearch();
 	this.Navigation();
+	this.cookieHelper();
 
-	//Setup default country
-	this.setCountry("CA");
+	//Check the cookie to find the country
+	if ((PBH_countryCode = this.cookieHelper.get("PBH_countryCode")) != "") {
+
+		//Setup the cookied country code
+		this.setCountry(PBH_countryCode);
+
+	} else {
+
+		//Setup default country
+		this.setCountry("CA");
+	}
 }
 
 
@@ -430,8 +443,17 @@ PBHelper.prototype.LDDUpload = function() {
 
 					} else if (data != null) {
 
+						//We get the ItemDescr and make sure it's not undefined
+						//Happend with parts in the store that give empty results (their bug :P)
+						if (data.Bricks[0] != null) {
+							ItemDescr = data.Bricks[0].ItemDescr;
+							Asset = data.Bricks[0].Asset;
+						} else {
+							ItemDescr = Asset = ""
+						}
+
 						//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
-						BrickData = $.extend(BrickData, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : data.Bricks[0].ItemDescr, "Asset" : data.Bricks[0].Asset});
+						BrickData = $.extend(BrickData, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : ItemDescr, "Asset" : Asset});
 					}
 
 					//5° Add line to the mighty table
@@ -1050,4 +1072,26 @@ PBHelper.prototype.Navigation = function() {
 		$("div"+SelectedClass).show();
 
 	}
+}
+
+PBHelper.prototype.cookieHelper = function() {
+
+    this.cookieHelper.get = function(a) {
+        for (var b = a + "=", c = document.cookie.split(";"), d = 0; d < c.length; d++) {
+            for (var e = c[d];
+                " " == e.charAt(0);) e = e.substring(1);
+            if (0 === e.indexOf(b)) return e.substring(b.length, e.length)
+        }
+        return ""
+    }
+
+    this.cookieHelper.set = function(a, b, c) {
+	    //NB.: 	a = name
+	    //		b = value
+	    //		c = Temp (en heures)
+        var d = new Date;
+        d.setTime(d.getTime() + 3600 * c * 1e3);
+        var e = "expires=" + d.toUTCString();
+        document.cookie = a + "=" + b + "; " + e + ";path=/"
+    }
 }
