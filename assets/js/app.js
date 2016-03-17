@@ -7,6 +7,7 @@ function PBHelper (options) {
 	this.users_base_url = "users.php";
 	this.defaultImage = "assets/img/defaultimg.gif";
 	this.country = "";
+	this.LEGOBaseURL = "https://mi-od-live-s.legocdn.com";
 
 	//SETUP 1° : We validate some options params
 	if (this.options.LLDUpload_interface == "") {
@@ -986,7 +987,7 @@ PBHelper.prototype.BrickSearch = function() {
 	this.BrickSearch.UI_Progress_init = function() {
 		$(this.UI.Main).find(this.UI.Progress).show();
 		$(this.UI.Main).find(this.UI.Progress).find("span.current").html(1);
-		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.totalSearch);
+		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.numberElements);
 	}
 
 	//This function update the analyser progress bar.
@@ -1038,6 +1039,9 @@ PBHelper.prototype.List = function() {
 	 * List variables
 	 */
 
+	 var listData;
+	 var currentListData;
+	 this.List.PartsValue = 0;
 
 	/*
 	 * List UI variables
@@ -1050,6 +1054,10 @@ PBHelper.prototype.List = function() {
 		"Register"		: ".registerPanel",
 		"Mainlist"		: ".mainlist",
 		"Templates"		: "#list_template",
+		"Lists"			: ".listsPlaceholder",
+		"ListDetail" 	: ".listContentPlaceholder",
+		"PartsTableSource"	: "#LDDtemplateTable",
+		"Progress"			: "#analyseList_progress"
 	};
 
 	/*
@@ -1205,7 +1213,7 @@ PBHelper.prototype.List = function() {
 
 	this.List.setupMainList = function(userdata, userlists) {
 
-		console.log("LoadUsers", userdata, userlists);
+		//console.log("LoadUsers", userdata, userlists);
 
 		//Setup the pannel header
 		$(this.UI.Main).find(this.UI.Mainlist).find("h3 span").html(userdata.username);
@@ -1213,8 +1221,11 @@ PBHelper.prototype.List = function() {
 		//Preserve this
 		var _this = this;
 
+		//Put the userlists in the var
+		this.listData = userlists;
+
 		//Empty the
-		$(this.UI.Main).find(this.UI.Mainlist).find(".listsPlaceholder").html("");
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).html("");
 
 		//Go trought each liat title
 		$.each(userlists, function(i, list) {
@@ -1231,9 +1242,11 @@ PBHelper.prototype.List = function() {
 			$(t).find("img").attr('src', _this.parent.defaultImage);
 			$(t).find("p.createdOn > span").html(list.createdOn);
 			$(t).find("p.nbPieces > span").html("0");
+			$(t).data("listID", list.ID);
+			$(t).data("list_i", i);
 
 			//Add to the DOM destination
-			$(t).appendTo($(_this.UI.Main).find(_this.UI.Mainlist).find(".listsPlaceholder"));
+			$(t).appendTo($(_this.UI.Main).find(_this.UI.Mainlist).find(_this.UI.Lists));
 		});
 
 		//Show the list
@@ -1289,6 +1302,172 @@ PBHelper.prototype.List = function() {
 				}
 			});
 		}
+	}
+
+	this.List.showList = function(element) {
+
+		//Get the list data
+		var i = $(element).data('list_i');
+		var data = this.listData[i];
+
+		console.log("listData", i, data);
+
+		//Save data in the var so it's easier later
+		this.currentListData = data;
+
+		//Keep this safe
+		var _this = this;
+
+		//Setup everything
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".panel-heading").html(data.listName);
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".setNbPieces").html("0"); //data.
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".setNbUniqueElements").html("0"); //data
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find("img").attr('src', this.parent.defaultImage);
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).show();
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).hide();
+
+		//We add each brick to the table
+		$.each(data.bricks, function( i, brick ){
+
+			_this.parent.AddPartsTableRow(
+				$(_this.UI.Main).find(_this.UI.Mainlist + " > .listContentPlaceholder > table > tbody"),	// Destination
+				$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
+				{														// BricksData
+					"DesignId" : brick.designID,
+					"colorCode" : brick.colorCode,
+					"nbReq" : brick.qte,
+					"ItemNo" : brick.elementID,
+					"ItemDescr" : brick.desc,
+					"Asset"	: brick.Asset,
+					"baseUrl" : _this.parent.LEGOBaseURL
+				},
+				true													// Preview
+			);
+		});
+
+	}
+
+	//This function analyse the parts list and found each part info from LEGO service
+	this.List.Analyse = function() {
+
+		//Reset some vars
+		this.PartsValue = 0;
+
+		//Reset the table
+		this.UI_resetPartsTable();
+
+		//Disabled the buttons
+		this.UI_disableButtons();
+
+		//Show the progress
+		this.UI_Progress_init();
+
+		//Variable to keep progress of the current number of part processed
+		var currentPart = 0;
+
+		//We are going into .each. We need to make "this" safe
+		var _this = this;
+
+		//We add each brick to the table
+		$.each(this.currentListData.bricks, function( i, brickData ){
+
+			//Start with analaytics
+			_this.parent.SendAnalytics(_this.parent.bricks_base_url + brickData.elementID + "&country=" + _this.parent.country, "Get item or design from list");
+
+			$.ajax({
+
+				method: "GET",
+				url: _this.parent.bricks_base_url + brickData.elementID + "&country=" + _this.parent.country,
+
+			}).done(function(data) {
+
+				//1° We try to find a color match
+				if (data != null) {
+					var found_brick = _this.parent.associateColor(brickData.colorCode, data.Bricks);
+				}
+
+				//2° Sum the list value
+				if (data != null && found_brick != -1 && data.Bricks[found_brick].Price != -1) {
+					_this.PartsValue = _this.PartsValue + data.Bricks[found_brick].Price * brickData.qte;
+				}
+
+				//3° We prepare the brick Data line
+				var brickSource = {
+					"DesignId" : brickData.designID,
+					"colorCode" : brickData.colorCode,
+					"nbReq" : brickData.qte,
+					"ItemNo" : brickData.elementID,
+					"ItemDescr" : brickData.desc
+				}
+
+				//4° If we have data, we merge it
+				if (data != null && found_brick != -1) {
+
+					//We send our default data with the found brick and the base url
+					brickSource = $.extend(brickSource, data.Bricks[found_brick], {"baseUrl" : data.ImageBaseUrl});
+
+				} else if (data != null) {
+
+					//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
+					brickSource = $.extend(brickSource, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : data.Bricks[0].ItemDescr, "Asset" : data.Bricks[0].Asset});
+				}
+
+				//5° Add line to the mighty table
+				_this.parent.AddPartsTableRow(
+					$(_this.UI.Main).find(_this.UI.Mainlist + " > .listContentPlaceholder > table > tbody"),	// Destination
+					$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
+					brickSource
+				);
+
+				//! TEST
+				//_this.SetList.push(BrickData);
+
+				//We update the progress
+			    currentPart++;
+			    _this.UI_Progress_update(currentPart);
+
+			    //console.log("Part " + currentPart + " of " + _this.currentListData.bricks.length);
+
+				//Check if we are done
+			    if (currentPart >= _this.currentListData.bricks.length) {
+					_this.Analyse_done();
+					_this.UI_Progress_done();
+				}
+			})
+			.fail(function(data) {
+				console.log("PBHELPER ERROR", data);
+			})
+			.always(function(data) {
+				//console.log("this.LDDUpload.Analyse AJAX", data);
+			});
+		});
+	}
+
+	//This function is called when all parts are analysed. Show the table and set the UI
+	this.List.Analyse_done = function() {
+
+		//We process and add the total row
+		this.Analyse_addTotalRow();
+
+		//We show the table
+		this.UI_showPartsTable();
+
+		//To set the buttons, we reable them and disabled again with the switch
+		this.UI_resetButtons();
+	}
+
+	//This function add the total row to the table
+	this.List.Analyse_addTotalRow = function() {
+
+		//We set the value in the template
+		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").find(".txtTotal").html(this.parent.roundPrice(this.PartsValue)+" $");
+
+		//We copy it to the pannel
+		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table > tfoot"));
+	}
+
+	this.List.SortTable = function(SortBy, Order) {
+		this.parent.SortTable(this.UI.Mainlist + " > .listContentPlaceholder > table > tbody", SortBy, Order);
 	}
 
 	 /*
@@ -1350,12 +1529,57 @@ PBHelper.prototype.List = function() {
 
 	}
 
+	//This function reset the parts table
+	this.List.UI_showPartsTable = function() {
+
+		//Show the table
+		$(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table").show();
+
+		//We must also reset the Bootstrap Tooltips added with Javascript
+		$('[data-toggle="tooltip"]').tooltip();
+	}
+
+	//This function reset the parts table
+	this.List.UI_resetPartsTable = function() {
+		$(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table").find("tr:gt(0)").remove(); //Remove all lines
+		$(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table").hide(); //Hide the table
+	}
+
+	//This function disabled all button. Option can omit the destroy one
+	this.List.UI_disableButtons = function() {
+
+		$(this.UI.Main).find(this.UI.Mainlist).find(".btn").attr('disabled', 'disabled');
+	}
+
+	//This function reset the buttons state
+	this.List.UI_resetButtons = function() {
+		$(this.UI.Main).find(this.UI.Mainlist).find(".btn").removeAttr('disabled');
+	}
+
+	//This function set the analyser progress bar
+	this.List.UI_Progress_init = function() {
+		$(this.UI.Main).find(this.UI.Progress).show();
+		$(this.UI.Main).find(this.UI.Progress).find("span.current").html("0");
+		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.currentListData.bricks.length);
+		$(this.UI.Main).find(this.UI.Progress).find("div.progress-bar").css("width", "0%");
+	}
+
+	//This function update the analyser progress bar.
+	this.List.UI_Progress_update = function(current) {
+		$(this.UI.Main).find(this.UI.Progress).find("span.current").html(current+1);
+	}
+
+	//This function hide the analyser progress bar.
+	this.List.UI_Progress_done = function() {
+		$(this.UI.Main).find(this.UI.Progress).hide();
+	}
+
 	//Must check ig we're already loged in
 	this.List.LoadUsers();
 }
 
 /*
- //! BRICK SEARCH
+ //! NAVIGATION
  */
 
 PBHelper.prototype.Navigation = function() {

@@ -3,12 +3,12 @@ require_once ('config.mysql.php');
 
 class MySQL {
 
-	var $DBConn;
+	protected $DBConn;
 	var $DBprfx;
-	var $DBhost;
-	var $DBuser;
-	var $DBpass;
-	var $DBName;
+	protected $DBhost;
+	protected $DBuser;
+	protected $DBpass;
+	protected $DBName;
 
 	/**
 	 * __construct function.

@@ -118,15 +118,32 @@ $session = new session();
 
 			} else {
 
+				//Prepare the return array
+				$retour = array();
+
 				//We get user lists
-				$results = $MySQL->select("userlists", "*", array("user_id" => $session->user['data']['user_id']), array("createdOn" => "ASC"));
+				$results = $MySQL->select("userlists", "*", array("user_id" => $session->user['data']['user_id']), array("createdOn" => "DESC"));
+
+				//Passe chacune des lists pour trouver leurs éléments
+				foreach ($results as $list) {
+
+					//We get user lists
+					//$bricks = $MySQL->select("listElements", "*", array("listID" => $list['ID']), array("elementID" => "DESC"));
+					  $bricks = $MySQL->query("SELECT * FROM " . $MySQL->DBprfx . "listElements l LEFT JOIN " . $MySQL->DBprfx . "elementCache e ON l.elementID=e.elementID WHERE l.listID = " . $list['ID'] . " ORDER BY l.elementID DESC");
+
+					//Ajoute les pièces à la liste
+					$list['bricks'] = $bricks;
+
+					//Ajoute au array de retour
+					$retour[] = $list;
+				}
 
 				//Return everything
 				returnPage(array(
 					'success' 	=> true,
 					'data'	=> array(
 						'userdata' => $session->user['data'],
-						'userlists' => $results
+						'userlists' => $retour
 					)
 				));
 			}

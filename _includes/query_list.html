@@ -5,7 +5,9 @@
 		<small>
 			Welcome <span></span>!
 			<div class="dropdown pull-right">
-			  <i class="fa fa-cog dropdown-toggle accountGear" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"></i>
+			  <button class="btn btn-default btn-xs dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    <i class="fa fa-cog"></i>
+			  </button>
 			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
 			    <li class="disabled"><a href="#">Manage account</a></li>
 			    <li><a href="javascript:void(0);" onclick="App.List.Logout()">Logout</a></li>
@@ -27,6 +29,73 @@
 	<br clear="all" /><br />
 
 	<div class="listsPlaceholder"></div>
+	<div class="panel panel-primary listContentPlaceholder" style="display: none;">
+		<!-- Default panel contents -->
+		<div class="panel-heading"></div>
+		<div class="panel-body">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-2"><img class="pull-left setImg" src="" alt="Set image"></div>
+					<div class="col-md-10">
+						<p>Total number of bricks found: <span class="setNbPieces"></span></p>
+						<p>Number of unique element found: <span class="setNbUniqueElements"></span></p>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="setNumber">Select country</label>
+				{% include county_list.html %}
+			</div>
+			<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Delete list</button>
+			<button class="btn btn-primary btn-analyseLDD" onclick="App.List.Analyse();"><i class="fa fa-search"></i> Find value</button>
+			<!-- Sort button -->
+			<div class="btn-group pull-right">
+			  <button type="button" class="btn btn-default dropdown-toggle btn-sortLDD" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			    <i class="fa fa-filter"></i> <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu">
+				<li class="dropdown-header">Sort by:</li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("price", "ASC")'>Price (low to high)</a></li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("price", "DESC")'>Price (high to low)</a></li>
+
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("total", "ASC")'>Total price (low to high)</a></li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("total", "DESC")'>Total Price (high to low)</a></a></li>
+
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("designid", "ASC")'>Design ID (low to high)</a></li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("designid", "DESC")'>Design ID (high to low)</a></a></li>
+
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("elementid", "ASC")'>Element number (low to high)</a></li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("elementid", "DESC")'>Element number (high to low)</a></a></li>
+
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("qte", "ASC")'>Quantity (low to high)</a></li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("qte", "DESC")'>Quantity (high to low)</a></a></li>
+
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("color", "ASC")'>Color (low to high)</a></li>
+			    <li><a href="javascript:void(0);" onclick='App.List.SortTable("color", "DESC")'>Color (high to low)</a></a></li>
+			  </ul>
+			</div>
+
+			<div class="progress" id="analyseList_progress" style="display: none; margin-top: 20px;">
+			  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+			  <div class="progress-bar-label">Searching element <span class="current"></span> of <span class="totalnb"></span></div>
+			</div>
+		</div>
+
+		<!-- Table -->
+		<table class="table table-bordered ListTable">
+			<thead>
+				<tr>
+					<th>Image</th>
+					<th>Brick info</th>
+					<th>Qte used</th>
+					<th>Unit price</th>
+					<th>Total price</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+			<tfoot></tfoot>
+		</table>
+	</div>
 </div>
 
 <div class="progressDiv">
@@ -81,7 +150,7 @@
 </div>
 
 <div class="hidden" id="list_template">
-	<a id="listElementTemplate" href="#">
+	<a id="listElementTemplate" href="javascript:void(0)" onclick="App.List.showList(this)">
 		<div class="panel panel-default"><div class="panel-body">
 			<table>
 				<tr>
@@ -91,10 +160,29 @@
 						<p class="createdOn">Created on: <span></span></p>
 						<p class="nbPieces">Number of parts: <span></span></p>
 					</td>
-					<td nowrap="nowrap" class="icon"><button class="btn btn-danger btn-small"><i class="fa fa-trash"></i></button></td>
 					<td nowrap="nowrap" class="icon"><i class="fa fa-chevron-right"></i></td>
 				</tr>
 			</table>
 		</div></div>
 	</a>
+</div>
+
+<div class="hidden">
+	<table id="LDDtemplateTable">
+		<tr class="templateTable_row">
+			<td class="asset v-align-middle"><img src=""></td>
+			<td class="small">
+				Element: <a class="elementID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Design ID: <a class="desingID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Part name: <span class="desc"></span><br />
+				Color: <span class="color"></span>
+			</td>
+			<td class="qte v-align-middle" align="center"></td>
+			<td class="price v-align-middle" align="center"></td>
+			<td class="priceTotal v-align-middle" align="center"></td>
+		</tr>
+		<tr class="templateTable_Totalrow">
+			<td colspan="6" align="right"><strong>Total: <span class="txtTotal"></span></strong></td>
+		</tr>
+	</table>
 </div>
