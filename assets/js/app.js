@@ -183,6 +183,9 @@ function PBHelper (options) {
 		$(t).data('price', elementPrice);
 		$(t).data('total', brickData.Price * brickData.nbReq);
 
+		//Setup the add button
+		this.List.setupAddButton($(t).find(".listAdd"), brickData.ItemNo);
+
 		//Add the copied line to the template
 		$(t).appendTo(destination);
 
@@ -1039,8 +1042,8 @@ PBHelper.prototype.List = function() {
 	 * List variables
 	 */
 
-	 var listData;
-	 var currentListData;
+	 this.List.listData = new Array();
+	 this.List.currentList = 0;
 	 this.List.PartsValue = 0;
 
 	/*
@@ -1053,11 +1056,13 @@ PBHelper.prototype.List = function() {
 		"Login"			: ".loginPanel",
 		"Register"		: ".registerPanel",
 		"Mainlist"		: ".mainlist",
+		"listCreateForm": ".listCreateForm",
 		"Templates"		: "#list_template",
 		"Lists"			: ".listsPlaceholder",
 		"ListDetail" 	: ".listContentPlaceholder",
 		"PartsTableSource"	: "#LDDtemplateTable",
-		"Progress"			: "#analyseList_progress"
+		"Progress"			: "#analyseList_progress",
+		"listPrevious"		: ".listPrevious"
 	};
 
 	/*
@@ -1176,6 +1181,11 @@ PBHelper.prototype.List = function() {
 		//Show the spinner
 		this.UI_ShowSpinner();
 
+		//Reset some vars
+		this.listData = new Array();
+		this.currentList = 0;
+		this.PartsValue = 0;
+
 		//We keep this secured
 		var _this = this;
 
@@ -1207,6 +1217,8 @@ PBHelper.prototype.List = function() {
 
 		//We get user data
 		$.post( this.parent.users_base_url + "?action=logout", function( reponse ) {
+
+			//Reload the list
 			_this.LoadUsers();
 		});
 	}
@@ -1308,26 +1320,25 @@ PBHelper.prototype.List = function() {
 
 		//Get the list data
 		var i = $(element).data('list_i');
-		var data = this.listData[i];
-
-		console.log("listData", i, data);
-
-		//Save data in the var so it's easier later
-		this.currentListData = data;
+		console.log("listData", i, this.listData[i]);
 
 		//Keep this safe
 		var _this = this;
 
 		//Setup everything
-		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".panel-heading").html(data.listName);
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".panel-heading").html(this.listData[i].listName);
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".setNbPieces").html("0"); //data.
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".setNbUniqueElements").html("0"); //data
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find("img").attr('src', this.parent.defaultImage);
-		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).show();
-		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).hide();
+
+		//Show the previous button and hide the create list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).show();		//Show the List Detail
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).hide();			//Hide the list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listCreateForm).hide(); //Hide the create list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listPrevious).show();	//Show the previous button
 
 		//We add each brick to the table
-		$.each(data.bricks, function( i, brick ){
+		$.each(this.listData[i].bricks, function( i, brick ){
 
 			_this.parent.AddPartsTableRow(
 				$(_this.UI.Main).find(_this.UI.Mainlist + " > .listContentPlaceholder > table > tbody"),	// Destination
@@ -1350,6 +1361,11 @@ PBHelper.prototype.List = function() {
 	//This function analyse the parts list and found each part info from LEGO service
 	this.List.Analyse = function() {
 
+		//dont do anything if the list is empty
+		if (this.listData[this.currentList].bricks.length <= 0) {
+			return;
+		}
+
 		//Reset some vars
 		this.PartsValue = 0;
 
@@ -1369,7 +1385,7 @@ PBHelper.prototype.List = function() {
 		var _this = this;
 
 		//We add each brick to the table
-		$.each(this.currentListData.bricks, function( i, brickData ){
+		$.each(this.listData[this.currentList].bricks, function( i, brickData ){
 
 			//Start with analaytics
 			_this.parent.SendAnalytics(_this.parent.bricks_base_url + brickData.elementID + "&country=" + _this.parent.country, "Get item or design from list");
@@ -1429,7 +1445,7 @@ PBHelper.prototype.List = function() {
 			    //console.log("Part " + currentPart + " of " + _this.currentListData.bricks.length);
 
 				//Check if we are done
-			    if (currentPart >= _this.currentListData.bricks.length) {
+			    if (currentPart >= _this.listData[_this.currentList].bricks.length) {
 					_this.Analyse_done();
 					_this.UI_Progress_done();
 				}
@@ -1470,6 +1486,71 @@ PBHelper.prototype.List = function() {
 		this.parent.SortTable(this.UI.Mainlist + " > .listContentPlaceholder > table > tbody", SortBy, Order);
 	}
 
+	this.List.setupAddButton = function(destination, elementID) {
+
+		//If we don't have an elementID, we abord
+		if (elementID == false || elementID == null || elementID == 0) {
+			return;
+		}
+
+		//if list data is empty, abord !
+		if (this.listData.length <= 0) {
+			//hide destination
+			$(destination).hide();
+
+			//Abord
+			return;
+		}
+
+		//console.log("Adding add button to ", destination);
+
+		//Ref. for the idea : http://www.bootply.com/9CvIygzob8
+
+		//Cleanup the old stuff
+		$(destination).find(".dropdown-menu").html("");
+
+		//Keep this safe
+		var _this = this;
+
+		//Do something for each list
+		$.each(this.listData, function(i, data) {
+			//console.log("Creating button for ", i, data);
+
+			$(destination).find(".dropdown-menu").append('<li><a href="javascript:void(0);" onclick="App.List.updateAddButton(this)" data-listid="' + data.ID + '">' + data.listName + '</a></li>');
+		});
+
+		//Setup the current one
+		$(destination).find(".btn-select > span.txt").html(this.listData[this.currentList].listName);
+		$(destination).find(".btn-select").data('listid', this.listData[this.currentList].ID);
+		$(destination).find(".btn-select").data('elementid', elementID);
+
+		/*
+		if (this.currentList > 0) {
+
+		}
+		*/
+	}
+
+	this.List.updateAddButton = function(element) {
+		//console.log("Updation button", element, $(element).data('listid'));
+		$(element).parents('.btn-group').find('.btn-select').data('listid', $(element).data('listid'));
+		$(element).parents('.btn-group').find('.btn-select > span.txt').html($(element).text());
+	}
+
+	this.List.addElement = function(element) {
+
+		//console.log("addElement", element, $(element).data());
+
+		var listID = $(element).parent().find(".btn-select").data('listid');
+		var elementID = $(element).parent().find(".btn-select").data('elementid');
+
+		console.log("ADDING " + elementID + " TO " + listID);
+
+		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : elementID}, function( reponse ) {
+			console.log(reponse);
+		});
+	}
+
 	 /*
 	 * UI Functions
 	 */
@@ -1479,6 +1560,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Login).hide();
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
+		$(this.UI.Main).find(this.UI.listCreateForm).hide();
 	}
 
 	this.List.UI_ShowRegister = function() {
@@ -1486,6 +1568,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Login).hide();
 		$(this.UI.Main).find(this.UI.Register).show();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
+		$(this.UI.Main).find(this.UI.listCreateForm).hide();
 	}
 
 	this.List.UI_ShowLogin = function(successMsg) {
@@ -1493,6 +1576,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Login).show();
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
+		$(this.UI.Main).find(this.UI.listCreateForm).hide();
 
 		if (successMsg) {
 			$(this.UI.Main).find(this.UI.Login).find(".alert-success").show();
@@ -1507,6 +1591,14 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Login).hide();
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).show();
+		$(this.UI.Main).find(this.UI.listCreateForm).show();
+	}
+
+	this.List.UI_ShowLists = function() {
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).hide();		//Hide the List Detail
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).show();			//Show the list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listCreateForm).show(); //Show the create list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listPrevious).hide();	//Hide the previous button
 	}
 
 	this.List.UI_showCreateList = function() {
@@ -1560,7 +1652,7 @@ PBHelper.prototype.List = function() {
 	this.List.UI_Progress_init = function() {
 		$(this.UI.Main).find(this.UI.Progress).show();
 		$(this.UI.Main).find(this.UI.Progress).find("span.current").html("0");
-		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.currentListData.bricks.length);
+		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.listData[this.currentList].bricks.length);
 		$(this.UI.Main).find(this.UI.Progress).find("div.progress-bar").css("width", "0%");
 	}
 

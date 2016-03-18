@@ -21,6 +21,7 @@ $session = new session();
 
 	switch ($action) {
 
+		//! REGISTER
 		case 'register':
 
 			//Get all the data
@@ -71,6 +72,8 @@ $session = new session();
 			));
 
 		break;
+
+		//! LOGIN
 		case 'login':
 
 			//Check if already loggedin
@@ -106,6 +109,7 @@ $session = new session();
 
 		break;
 
+		//!LIST
 		case 'List':
 
 			//Check if we are logged in
@@ -150,12 +154,14 @@ $session = new session();
 
 		break;
 
+		//! LOGOUT
 		case 'logout':
 
 			$session->logout();
 
 		break;
 
+		//! CREATE LIST
 		case 'createList':
 
 			//We need to be logged in. Make sure of that and get user_id
@@ -191,6 +197,70 @@ $session = new session();
 
 		break;
 
+		//! ADD ELEMENT TO LIST
+		case 'addElementToList':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'msg' => "Not logged in",
+				));
+			}
+
+			//Get the list ID
+			$listID = request_var('listID', 0);
+			$elementID = request_var('elementID', 0);
+
+			//Check for empty values
+			if ($listID == 0 || $elementID == 0) {
+				returnPage(array(
+					'errorCode' => 402,
+					'msg' => "Missing param",
+				));
+			}
+
+			//Get infos from the list
+			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+			//$result = $MySQL->query("SELECT ul.*, le.qte FROM " . $MySQL->DBprfx . "userlists ul LEFT JOIN " . $MySQL->DBprfx . "listElements le ON ul.ID=le.listID WHERE ul.ID = " . $listID . " AND ul.user_id = " . $session->user['data']['user_id'] . " LIMIT 1");
+
+			//print_r($result); //exit;
+
+
+			if (empty($result)) {
+				returnPage(array(
+					'errorCode' => 410,
+					'msg' => "List not owned",
+				));
+			}
+
+			//Same thing with the part to see if we need an insert or update
+			$result_element = $MySQL->select_one("listElements", "ID, qte", array("elementID" => $elementID, "AND listID" => $listID));
+
+			//print_r($result_element);
+
+			//echo "dd"; exit;
+
+			//Insert or update
+			if (empty($result_element)) {
+
+				$MySQL->insert("listElements", array(
+					"listID"	=> $listID,
+					"elementID"	=> $elementID,
+					"qte" 		=> 1
+				));
+
+			} else {
+				$MySQL->update("listElements", array('qte' => ($result_element['qte'] + 1)), array('ID' => $result_element['ID']));
+			}
+
+			returnPage(array(
+				'success' 	=> true,
+			));
+
+		break;
+
+		//! DEFAULT
 		default:
 
 			returnPage(array(
