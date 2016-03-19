@@ -148,4 +148,27 @@ function request_var($var_name, $default, $cookie = false) {
 	}
 }
 
+function LEGO_Cache_Data($data) {
+
+	global $MySQL;
+
+	//Decode as an associative array
+	$data_json = json_decode($data, true);
+
+	//We store the data in the Cache Database
+	foreach ($data_json['Bricks'] as $i => $brickValue) {
+
+		$MySQL->rawQuery("INSERT INTO " . $MySQL->DBprfx . "elementCache (
+			`elementID`, `designID`, `ColourDescr`, `desc`, `cachedOn`, `Asset`
+		) VALUES (
+			".$brickValue['ItemNo'].",
+			".$brickValue['DesignId'].",
+			'".addslashes($brickValue['ColourDescr'])."',
+			'".addslashes($brickValue['ItemDescr'])."',
+			".time().",
+			'".$brickValue['Asset']."'
+		) ON DUPLICATE KEY UPDATE `designID`=".$brickValue['DesignId'].", `ColourDescr`='".addslashes($brickValue['ColourDescr'])."', `desc`='".addslashes($brickValue['ItemDescr'])."', `cachedOn`=".time().", `Asset`='".$brickValue['Asset']."'");
+	}
+}
+
 ?>

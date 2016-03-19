@@ -40,7 +40,7 @@ function PBHelper (options) {
 		}
 	}
 
-	//This function return the LEGO ID of a color (string) from a LEGO defined colorCode
+	//This function return the LEGO Service ID of a color (string) from a LEGO defined colorCode
 	this.getColorLegoID = function(colorCode) {
 		if (LEGO_Color[colorCode] != null) {
 			return LEGO_Color[colorCode].LegoID;
@@ -49,7 +49,7 @@ function PBHelper (options) {
 		}
 	}
 
-	//This function found a color in a list of bricks returned from the site base on a color code
+	//This function finds a color in a list of bricks returned from the site base on a color code
 	this.associateColor = function (colorCode, bricks) {
 
 		var reponse = -1;
@@ -57,6 +57,21 @@ function PBHelper (options) {
 
 		$.each(bricks, function( i, brick ){
 			if (brick.ColourDescr.toLowerCase() === colorID.toLowerCase()) {
+				reponse = i;
+				return false;
+			}
+		});
+
+		return reponse;
+	}
+
+	//This function finds a color in a list of bricks returned from the site base on a color description
+	this.associateColourDescr = function (ColourDescr, bricks) {
+
+		var reponse = -1;
+
+		$.each(bricks, function( i, brick ){
+			if (brick.ColourDescr.toLowerCase() === ColourDescr.toLowerCase()) {
 				reponse = i;
 				return false;
 			}
@@ -82,11 +97,6 @@ function PBHelper (options) {
 			console.log("PBHELPER ERROR", "Non optinal option missing in tableAddPart function", "template");
 			return;
 		}
-		if (brickData.DesignId == null) {
-			console.log("PBHELPER ERROR", "Non optinal option missing in tableAddPart function", "DesignId");
-			return;
-		}
-
 
 		//We parse the brickData to fill in blanks
 		brickData.nbReq = brickData.nbReq || "";						//NB Required in the set
@@ -990,7 +1000,7 @@ PBHelper.prototype.BrickSearch = function() {
 	this.BrickSearch.UI_Progress_init = function() {
 		$(this.UI.Main).find(this.UI.Progress).show();
 		$(this.UI.Main).find(this.UI.Progress).find("span.current").html(1);
-		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.numberElements);
+		$(this.UI.Main).find(this.UI.Progress).find("span.totalnb").html(this.totalSearch);
 	}
 
 	//This function update the analyser progress bar.
@@ -1322,6 +1332,9 @@ PBHelper.prototype.List = function() {
 		var i = $(element).data('list_i');
 		console.log("listData", i, this.listData[i]);
 
+		//Reset the table
+		this.UI_resetPartsTable();
+
 		//Keep this safe
 		var _this = this;
 
@@ -1345,7 +1358,7 @@ PBHelper.prototype.List = function() {
 				$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
 				{														// BricksData
 					"DesignId" : brick.designID,
-					"colorCode" : brick.colorCode,
+					"ColourDescr" : brick.ColourDescr,
 					"nbReq" : brick.qte,
 					"ItemNo" : brick.elementID,
 					"ItemDescr" : brick.desc,
@@ -1371,6 +1384,9 @@ PBHelper.prototype.List = function() {
 
 		//Reset the table
 		this.UI_resetPartsTable();
+
+		//Hide the table
+		$(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table").hide();
 
 		//Disabled the buttons
 		this.UI_disableButtons();
@@ -1399,7 +1415,7 @@ PBHelper.prototype.List = function() {
 
 				//1° We try to find a color match
 				if (data != null) {
-					var found_brick = _this.parent.associateColor(brickData.colorCode, data.Bricks);
+					var found_brick = _this.parent.associateColourDescr(brickData.ColourDescr, data.Bricks);
 				}
 
 				//2° Sum the list value
@@ -1410,7 +1426,7 @@ PBHelper.prototype.List = function() {
 				//3° We prepare the brick Data line
 				var brickSource = {
 					"DesignId" : brickData.designID,
-					"colorCode" : brickData.colorCode,
+					//"colorCode" : brickData.colorCode,
 					"nbReq" : brickData.qte,
 					"ItemNo" : brickData.elementID,
 					"ItemDescr" : brickData.desc
@@ -1427,6 +1443,8 @@ PBHelper.prototype.List = function() {
 					//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
 					brickSource = $.extend(brickSource, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : data.Bricks[0].ItemDescr, "Asset" : data.Bricks[0].Asset});
 				}
+
+				console.log("analyse, adding", brickSource);
 
 				//5° Add line to the mighty table
 				_this.parent.AddPartsTableRow(
@@ -1539,15 +1557,18 @@ PBHelper.prototype.List = function() {
 
 	this.List.addElement = function(element) {
 
-		//console.log("addElement", element, $(element).data());
-
 		var listID = $(element).parent().find(".btn-select").data('listid');
 		var elementID = $(element).parent().find(".btn-select").data('elementid');
+
 
 		console.log("ADDING " + elementID + " TO " + listID);
 
 		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : elementID}, function( reponse ) {
+			//!TODO: Ajouter feedback dans l'UI
 			console.log(reponse);
+
+			//Reload the list
+
 		});
 	}
 
@@ -1634,7 +1655,6 @@ PBHelper.prototype.List = function() {
 	//This function reset the parts table
 	this.List.UI_resetPartsTable = function() {
 		$(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table").find("tr:gt(0)").remove(); //Remove all lines
-		$(this.UI.Main).find(this.UI.Mainlist + " > .listContentPlaceholder > table").hide(); //Hide the table
 	}
 
 	//This function disabled all button. Option can omit the destroy one

@@ -1,14 +1,15 @@
 <?php
 
-//https://wwwsecure.us.lego.com/en-US/service/rpservice/getcountryinfo?country=CA
+require_once("config.php");
+require_once("functions_mysql.php");
+require_once("functions_sessions.php");
 
-$getitemordesign = $_GET['getitemordesign'];
-$country = $_GET['country'];
+//Prépare MySQL
+$MySQL = new MySQL();
 
-//Default value
-if (!isset($country) || $country == "") {
-	$country = "CA";
-}
+//Variables
+$getitemordesign = request_var("getitemordesign", 0);
+$country = request_var("country", "CA");
 
 // Create a stream
 $opts = array(
@@ -18,12 +19,15 @@ $opts = array(
               "Cookie: csAgeAndCountry={'age':60,'countrycode':'".$country."'}\r\n"
   )
 );
-
 $context = stream_context_create($opts);
 
 // Open the file using the HTTP headers set above
 $data = file_get_contents('https://wwwsecure.us.lego.com/en-US/service/rpservice/getitemordesign?isSalesFlow=true&itemordesignnumber=' . $getitemordesign, false, $context);
 
+//Cache the data
+LEGO_Cache_Data($data);
+
+//Return everything
 header('Content-type: application/json');
 echo $data;
 

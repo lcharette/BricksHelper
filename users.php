@@ -132,8 +132,7 @@ $session = new session();
 				foreach ($results as $list) {
 
 					//We get user lists
-					//$bricks = $MySQL->select("listElements", "*", array("listID" => $list['ID']), array("elementID" => "DESC"));
-					  $bricks = $MySQL->query("SELECT * FROM " . $MySQL->DBprfx . "listElements l LEFT JOIN " . $MySQL->DBprfx . "elementCache e ON l.elementID=e.elementID WHERE l.listID = " . $list['ID'] . " ORDER BY l.elementID DESC");
+					  $bricks = $MySQL->query("SELECT l.*, e.designID, e.ColourDescr, e.desc, e.Asset FROM " . $MySQL->DBprfx . "listElements l LEFT JOIN " . $MySQL->DBprfx . "elementCache e ON l.elementID=e.elementID WHERE l.listID = " . $list['ID'] . " ORDER BY l.elementID DESC");
 
 					//Ajoute les pièces à la liste
 					$list['bricks'] = $bricks;
@@ -222,10 +221,6 @@ $session = new session();
 
 			//Get infos from the list
 			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
-			//$result = $MySQL->query("SELECT ul.*, le.qte FROM " . $MySQL->DBprfx . "userlists ul LEFT JOIN " . $MySQL->DBprfx . "listElements le ON ul.ID=le.listID WHERE ul.ID = " . $listID . " AND ul.user_id = " . $session->user['data']['user_id'] . " LIMIT 1");
-
-			//print_r($result); //exit;
-
 
 			if (empty($result)) {
 				returnPage(array(
@@ -234,12 +229,9 @@ $session = new session();
 				));
 			}
 
+			//!TODO : Changer pour le même fonction que le cache
 			//Same thing with the part to see if we need an insert or update
 			$result_element = $MySQL->select_one("listElements", "ID, qte", array("elementID" => $elementID, "AND listID" => $listID));
-
-			//print_r($result_element);
-
-			//echo "dd"; exit;
 
 			//Insert or update
 			if (empty($result_element)) {
