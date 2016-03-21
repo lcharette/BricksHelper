@@ -159,7 +159,7 @@ function LEGO_Cache_Data($data) {
 	foreach ($data_json['Bricks'] as $i => $brickValue) {
 
 		$MySQL->rawQuery("INSERT INTO " . $MySQL->DBprfx . "elementCache (
-			`elementID`, `designID`, `ColourDescr`, `desc`, `cachedOn`, `Asset`
+			`elementID`, `designID`, `ColourDescr`, `ItemDescr`, `cachedOn`, `Asset`
 		) VALUES (
 			".$brickValue['ItemNo'].",
 			".$brickValue['DesignId'].",
@@ -167,7 +167,7 @@ function LEGO_Cache_Data($data) {
 			'".addslashes($brickValue['ItemDescr'])."',
 			".time().",
 			'".$brickValue['Asset']."'
-		) ON DUPLICATE KEY UPDATE `designID`=".$brickValue['DesignId'].", `ColourDescr`='".addslashes($brickValue['ColourDescr'])."', `desc`='".addslashes($brickValue['ItemDescr'])."', `cachedOn`=".time().", `Asset`='".$brickValue['Asset']."'");
+		) ON DUPLICATE KEY UPDATE `designID`=".$brickValue['DesignId'].", `ColourDescr`='".addslashes($brickValue['ColourDescr'])."', `ItemDescr`='".addslashes($brickValue['ItemDescr'])."', `cachedOn`=".time().", `Asset`='".$brickValue['Asset']."'");
 	}
 }
 

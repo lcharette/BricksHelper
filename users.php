@@ -132,13 +132,16 @@ $session = new session();
 				foreach ($results as $list) {
 
 					//We get user lists
-					  $bricks = $MySQL->query("SELECT l.*, e.designID, e.ColourDescr, e.desc, e.Asset FROM " . $MySQL->DBprfx . "listElements l LEFT JOIN " . $MySQL->DBprfx . "elementCache e ON l.elementID=e.elementID WHERE l.listID = " . $list['ID'] . " ORDER BY l.elementID DESC");
+					$bricks = $MySQL->query("SELECT l.elementID, l.qte, e.designID, e.ColourDescr, e.ItemDescr, e.Asset FROM " . $MySQL->DBprfx . "listElements l LEFT JOIN " . $MySQL->DBprfx . "elementCache e ON l.elementID=e.elementID WHERE l.listID = " . $list['ID'] . " ORDER BY l.elementID DESC");
 
-					//Ajoute les pièces à la liste
-					$list['bricks'] = $bricks;
+					//On va parcourir "bricks" parce que l'on veut que l'elementID soit la clé de l'array
+					foreach ($bricks as $brick) {
+						//Ajoute les pièces à la liste
+						$list['bricks'][$brick['elementID']] = $brick;
+					}
 
-					//Ajoute au array de retour
-					$retour[] = $list;
+					//Ajoute au array de retour. On associe sur l'ID de la liste
+					$retour[$list['ID']] = $list;
 				}
 
 				//Return everything
