@@ -97,8 +97,6 @@ function PBHelper (options) {
 			throw new Error("PBHELPER : Non optinal option 'template' missing in tableAddPart function");
 		}
 
-		//console.log("AddElementToTable", brick);
-
 		//On s'occupe des infos générales
 		$(template).find(".templateTable_row").find(".desingID").html( brick.data.getProperty('designid') );
 		$(template).find(".templateTable_row").find(".elementID").html( brick.data.getProperty('ID') );
@@ -120,8 +118,19 @@ function PBHelper (options) {
 		//Add the sort info to the line
 		$(t).data('LegoElement', brick.data.getProperty('ID'));
 
-		//Setup the add button
-		//this.List.setupAddButton($(t).find(".listAdd"), brickData.ItemNo);
+		//Setup the add button. The "List" thingny is responsible for populating the
+		//list name in the list selector
+		this.List.setupAddButton($(t).find(".listAdd"));
+
+		//Keep this safe for the next part
+		var _this = this;
+
+		//We add an event to this button
+		$(t).find(".listAdd .btn-add").click(function() {
+
+			//Get the lsit ID from the list selector and we have a LegoElement object alreay. So here we go
+			_this.List.addElement($(this).parents(".listAdd").data('listid'), brick);
+		});
 
 		//Add the copied line to the template
 		$(t).appendTo(destination);
@@ -131,7 +140,7 @@ function PBHelper (options) {
 	}
 
 	//This function add a part row to a table. One function to rule them all
-	this.AddPartsTableRow = function(destination, template, brickData, preview) {
+	/*this.AddPartsTableRow = function(destination, template, brickData, preview) {
 
 		//Some data is required
 		if (destination == null) {
@@ -265,7 +274,7 @@ function PBHelper (options) {
 
 		//Because the temp,late will retain the class if we don't remove it
 		$(template).find(".templateTable_row").find(".asset").find("img").removeClass("bw-image");
-	}
+	}*/
 
 	//This function is used from the HTML select element
 	this.updateCountry = function(element) {
@@ -288,9 +297,13 @@ function PBHelper (options) {
 		$('.coutrySelect option[value='+country+']').attr('selected','selected');
 	}
 
+	this.updateAddButton = function(element) {
+		$(element).parents('.listAdd').data('listid', $(element).data('listid'));
+		$(element).parents('.listAdd').find('.btn-select > span.txt').html($(element).text());
+	}
+
 	//This function send the analitics data to Google Analitycs
 	this.SendAnalytics = function (url, pageTitle) {
-
 		if (typeof ga != 'undefined') {
 			ga('send', {
 				'hitType': 'pageview',
@@ -300,7 +313,7 @@ function PBHelper (options) {
 		}
 	}
 
-	this.SortTable = function(TableSource, SortBy, Order) {
+	/*this.SortTable = function(TableSource, SortBy, Order) {
 
 		//Build a list of all the items in the table
 		var rowList = new Object();
@@ -349,8 +362,9 @@ function PBHelper (options) {
 
 		//Remove the temps table
 		$("#tempTable").remove();
-	}
+	}*/
 
+	//This function Sort a LegoListElement
 	this.SortList = function(rowList, SortBy, Order) {
 
 		//Sort everything
@@ -742,7 +756,9 @@ PBHelper.prototype.SetSearch = function() {
 	 * SetSearch variables
 	 */
 
-	 var totalSearch = 0; //Number of sets to search for
+	var totalSearch = 0; //Number of sets to search for
+
+	this.fetchData = new Object;
 
 	/*
 	 * SetSearch UI variables
@@ -780,6 +796,9 @@ PBHelper.prototype.SetSearch = function() {
 		this.totalSearch = items.length;
 		this.UI_Progress_init();
 
+		//Reset fetch data
+		this.fetchData = new Object;
+
 		//We are going into .each. We need to make "this" safe
 		var _this = this;
 
@@ -795,44 +814,67 @@ PBHelper.prototype.SetSearch = function() {
 			$.ajax({
 
 				method: "GET",
+				timeout: _this.parent.AjaxTimeout * 1000,
 				url: _this.parent.sets_base_url + item + "&country=" + _this.parent.country,
 
-			}).done(function(data) {
+			}).always(function(data) {
 
-				//Send to cache
-				_this.parent.sendLEGODataToCache(data);
+				//We use always because of the timeout because we want to catch cancel and not block
+				//the UI. This help checkout error.
+				if (data.statusText != null) {
 
-				if (data === null) {
-
+					//Show error to the user
 					//Set the text
-					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html(item);
+					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Error in AJAX request : Connexion timed out");
 
 					//Copy to the placeholder
 					$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.SetPlaceholder));
 
+					//Send error to console
+					console.warn("Error in AJAX request : Connexion timed out", data);
+
+				} else if (data.Bricks == null) {
+
+					//Set the text
+					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Set " + data.REQUEST + " not found");
+
+					//Copy to the placeholder
+					$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.SetPlaceholder));
+
+					//For debug purpose
+					console.warn("Set " + data.REQUEST + " not found");
+
 				} else {
 
-					//We create a the pannel
-					var createdPannelID = _this.UI_createPannel(
-						data.Product.ProductName,
-						data.ImageBaseUrl + data.Product.Asset,
-						data.Product.ProductNo,
-						data.Bricks.length
-					);
+					//Send to cache
+					_this.parent.sendLEGODataToCache(data);
+
+					//Create a list element
+					_this.fetchData[data.REQUEST] = new LegoBrickList({
+						"query" : data.REQUEST,
+						"ProductName": data.Product.ProductName,
+						"ProductAsset": data.ImageBaseUrl + data.Product.Asset,
+						"ProductNo": data.Product.ProductNo
+					});
 
 					//Process each brick in result
 					$.each(data.Bricks, function( index, brick ){
 
-						//1° Add some info to the data object
-						BrickData = $.extend(brick, {"baseUrl" : data.ImageBaseUrl});
+						//Create a brick
+						var b = new LegoElement(brick.ItemNo, {
+							'designid' : brick.DesignId,
+							'asset': data.ImageBaseUrl + brick.Asset,
+							'itemDesc': brick.ItemDescr,
+							'price': brick.Price,
+							'currency': brick.CId,
+							'stock': brick.SQty
+						});
 
-						//2° Add the table row
-						_this.parent.AddPartsTableRow(
-							$(_this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
-							$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
-							BrickData
-						);
+						//set the brick color
+						b.setColorFromStr(brick.ColourDescr);
 
+						//Add the created brick to the list
+						_this.fetchData[data.REQUEST].addBrick(b);
 					});
 				}
 
@@ -842,34 +884,49 @@ PBHelper.prototype.SetSearch = function() {
 
 				//Check if we are done
 			    if (currentPart >= _this.totalSearch) {
-					_this.done();
-					_this.UI_Progress_done();
+
+				    //Display all the lists in "fetchData"
+					_this.displayLists();
+
+				    //Stop the progress
+				    _this.UI_Progress_done();
+
+					//We can show the holder
+					$(_this.UI.Main).find(_this.UI.SetPlaceholder).show();
+
+					//Reset the button
+					_this.UI_resetButtons();
+
+					//We must also reset the Bootstrap Tooltips added with Javascript
+					$('[data-toggle="tooltip"]').tooltip();
 				}
-
-			})
-			.fail(function(data) {
-				console.log("PBHELPER ERROR", data);
-			})
-			.always(function(data) {
-				//console.log(data);
 			});
-
-
 		});
-
 	}
 
 	//This function reset the UI and take cares of function once everything is done
-	this.SetSearch.done = function() {
+	this.SetSearch.displayLists = function() {
 
-		//We can show the holder
-		$(this.UI.Main).find(this.UI.SetPlaceholder).show();
+		//For each list
+		for (var i in this.fetchData) {
 
-		//Reset the button
-		this.UI_resetButtons();
+			//We create a the pannel
+			var createdPannelID = this.UI_createPannel(
+				this.fetchData[i].getProperty('ProductName'),
+				this.fetchData[i].getProperty('ProductAsset'),
+				this.fetchData[i].getProperty('ProductNo'),
+				this.fetchData[i].getNbElements()
+			);
 
-		//We must also reset the Bootstrap Tooltips added with Javascript
-		$('[data-toggle="tooltip"]').tooltip();
+			//All every bricks
+			for (var j in this.fetchData[i].getBricks()) {
+				this.parent.AddElementToTable(
+					$(this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
+					$(this.UI.Main).find(this.UI.PartsTableSource), 			// Source
+					this.fetchData[i].getBrick(j)								// Brick
+				);
+			}
+		}
 	}
 
 	/*
@@ -1012,51 +1069,65 @@ PBHelper.prototype.BrickSearch = function() {
 			$.ajax({
 
 				method: "GET",
+				timeout: _this.parent.AjaxTimeout * 1000,
 				url: _this.parent.bricks_base_url + item + "&country=" + _this.parent.country,
 
-			}).done(function(data) {
+			}).always(function(data) {
 
-				//!TODO: Change for Always with timeout and error catch
+				//We use always because of the timeout because we want to catch cancel and not block
+				//the UI. This help checkout error.
+				if (data.statusText != null) {
 
-				//Send to cache
-				_this.parent.sendLEGODataToCache(data);
-
-				if (data === null) {
-
+					//Show error to the user
 					//Set the text
-					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html(item);
+					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Error in AJAX request : Connexion timed out");
 
 					//Copy to the placeholder
 					$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.Placeholder));
 
+					//Send error to console
+					console.warn("Error in AJAX request : Connexion timed out", data);
+
+				} else if (data.Bricks == null) {
+
+					//Set the text
+					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Element " + data.REQUEST + " not found");
+
+					//Copy to the placeholder
+					$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.Placeholder));
+
+					//For debug purpose
+					console.warn("Element " + data.REQUEST + " not found");
+
 				} else {
 
-					//We create a the pannel
-					var createdPannelID = _this.UI_createPannel(item);
+					//Send to cache
+					_this.parent.sendLEGODataToCache(data);
 
-					//!TODO Create a list element
+					//Create a list element
+					_this.fetchData[data.REQUEST] = new LegoBrickList({
+						"query" : data.REQUEST
+					});
 
 					//Process each brick in result
 					$.each(data.Bricks, function( index, brick ){
 
-						//!TODO Create a brick and add it to the list
+						//Create a brick
+						var b = new LegoElement(brick.ItemNo, {
+							'designid' : brick.DesignId,
+							'asset': data.ImageBaseUrl + brick.Asset,
+							'itemDesc': brick.ItemDescr,
+							'price': brick.Price,
+							'currency': brick.CId,
+							'stock': brick.SQty
+						});
 
-						//1° Add some info to the data object
-						BrickData = $.extend(brick, {"baseUrl" : data.ImageBaseUrl});
+						//set the brick color
+						b.setColorFromStr(brick.ColourDescr);
 
-						//2° Add the table row
-/*
-						_this.parent.AddPartsTableRow(
-							$(_this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
-							$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
-							BrickData
-						);
-*/
-
+						//Add the created brick to the list
+						_this.fetchData[data.REQUEST].addBrick(b);
 					});
-
-					//!TODO Add the list to fetchData
-					//this.fetchData = new Object;
 				}
 
 				//We update the progress
@@ -1065,36 +1136,78 @@ PBHelper.prototype.BrickSearch = function() {
 
 				//Check if we are done
 			    if (currentPart >= _this.totalSearch) {
-					_this.done();
+
+				  	//Display all the lists in "fetchData"
+					_this.displayLists();
+
+					//Stop the progress
 					_this.UI_Progress_done();
+
+					//We can show the holder
+					$(_this.UI.Main).find(_this.UI.Placeholder).show();
+
+					//Reset the button
+					_this.UI_resetButtons();
+
+					//We must also reset the Bootstrap Tooltips added with Javascript
+					$('[data-toggle="tooltip"]').tooltip();
 				}
-
-			})
-			.fail(function(data) {
-				console.log("PBHELPER ERROR", data);
-			})
-			.always(function(data) {
-				//console.log(data);
 			});
-
-
 		});
-
 	}
 
-	//This function reset the UI and take cares of function once everything is done
-	this.BrickSearch.done = function() {
+	//This function take care of displaying lists elements
+	this.BrickSearch.displayLists = function() {
 
-		//We can show the holder
-		$(this.UI.Main).find(this.UI.Placeholder).show();
+		//For each list
+		for (var i in this.fetchData) {
 
-		//!TODO Refresh data
+			//We create a the pannel
+			var createdPannelID = this.UI_createPannel( this.fetchData[i].getProperty('query') );
 
-		//Reset the button
-		this.UI_resetButtons();
+			//All every bricks
+			for (var j in this.fetchData[i].getBricks()) {
+				this.parent.AddElementToTable(
+					$(this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
+					$(this.UI.Main).find(this.UI.PartsTableSource), 			// Source
+					this.fetchData[i].getBrick(j)								// Brick
+				);
+			}
+		}
+	}
 
-		//We must also reset the Bootstrap Tooltips added with Javascript
-		$('[data-toggle="tooltip"]').tooltip();
+	this.BrickSearch.addElement = function(element) {
+
+		var listID = $(element).parents(".listAdd").data('listid');
+		var elementID = $(element).parents("tr").data('LegoElement');
+		//var container = $(element).parents(".listAdd").data('container');
+
+		//Get the data
+		var elementData = $(element).parents('tr').data();
+
+		console.log('addElement', listID, elementID, elementData);
+
+
+		return;
+		//Keep this safe
+		var _this = this;
+
+		//Post to PHP so the part is added to the list
+		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : elementID}, function( reponse ) {
+
+			//!TODO: Ajouter feedback dans l'UI
+
+
+			//Add the element to the master list
+			//We do it here, otherwise it will appear in the list, but the state won't be saved
+			_this.addElementToList(listID, elementID, elementData);
+
+			//Reload the list if it's the current one
+			if (listID == _this.active) {
+				_this.refreshList();
+			}
+
+		});
 	}
 
 	/*
@@ -1611,12 +1724,17 @@ PBHelper.prototype.List = function() {
 
 				//We use always because of the timeout because we want to catch cancel and not block
 				//the UI. This help checkout error.
-				if (data == null || data.Bricks == null) {
+				if (data.statusText != null) {
 
 					//!TODO: Show error to the user
 
 					//Send error to console
 					console.warn("Error in AJAX request", data);
+
+				} else if (data.Bricks == null) {
+
+					//!TODO Show error to user
+					console.warn("Element " + data.REQUEST + " not found", data);
 
 				} else {
 
@@ -1624,7 +1742,7 @@ PBHelper.prototype.List = function() {
 					_this.parent.sendLEGODataToCache(data);
 
 					//Get the brick and put it a var for shortcut
-					var brick = _this.lists[_this.active].getBrick(data.Bricks[0].ItemNo);
+					var brick = _this.lists[_this.active].getBrick(data.REQUEST);
 
 					//Update the price from the list brick element
 					brick.data.setProperty("price", data.Bricks[0].Price);
@@ -1675,23 +1793,7 @@ PBHelper.prototype.List = function() {
 		this.refreshList();
 	}
 
-	this.List.setupAddButton = function(destination, elementID) {
-
-		//If we don't have an elementID, we abord
-		if (elementID == false || elementID == null || elementID == 0) {
-			return;
-		}
-
-		//if list data is empty, abord !
-		if (this.listData.length <= 0 || elementID == 0 || elementID == null) {
-
-			//hide destination
-			$(destination).hide();
-
-			//Abord
-			return;
-		}
-
+	this.List.setupAddButton = function(destination) {
 
 		//Ref. for the idea of the dropdown:
 		//http://www.bootply.com/9CvIygzob8
@@ -1703,8 +1805,8 @@ PBHelper.prototype.List = function() {
 		var _this = this;
 
 		//Do something for each list
-		$.each(this.listData, function(i, data) {
-			$(destination).find(".dropdown-menu").append('<li><a href="javascript:void(0);" onclick="App.List.updateAddButton(this)" data-listid="' + data.ID + '">' + data.listName + '</a></li>');
+		$.each(this.lists, function(i, data) {
+			$(destination).find(".dropdown-menu").append('<li><a href="javascript:void(0);" onclick="App.updateAddButton(this)" data-listid="' + i + '">' + data.getProperty('name') + '</a></li>');
 		});
 
 		//If the user havn't looked at his list yet, we won't have a currentList defined ( = 0 )
@@ -1713,7 +1815,7 @@ PBHelper.prototype.List = function() {
 
 			//Get the first key
 			//Ref.: http://stackoverflow.com/a/11509718
-			var i = Object.keys(this.listData)[0];
+			var i = Object.keys(this.lists)[0];
 
 		} else {
 
@@ -1721,82 +1823,30 @@ PBHelper.prototype.List = function() {
 		}
 
 		//Setup the current one
-		$(destination).find(".btn-select > span.txt").html(this.listData[i].listName);
-		$(destination).find(".btn-select").data('listid', this.listData[i].ID);
-		$(destination).find(".btn-select").data('elementid', elementID);
+		$(destination).find(".btn-select > span.txt").html(this.lists[i].getProperty('name'));
+		$(destination).data('listid', i);
 	}
 
-	this.List.updateAddButton = function(element) {
-		$(element).parents('.btn-group').find('.btn-select').data('listid', $(element).data('listid'));
-		$(element).parents('.btn-group').find('.btn-select > span.txt').html($(element).text());
-	}
-
-	this.List.addElement = function(element) {
-
-		var listID = $(element).parent().find(".btn-select").data('listid');
-		var elementID = $(element).parent().find(".btn-select").data('elementid');
-		var elementData = $(element).parents('tr').data();
+	this.List.addElement = function(listID, brick) {
 
 		//Keep this safe
 		var _this = this;
 
 		//Post to PHP so the part is added to the list
-		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : elementID}, function( reponse ) {
+		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : brick.data.getProperty('ID')}, function( reponse ) {
 
 			//!TODO: Ajouter feedback dans l'UI
-
+			//console.log("ADDING TO LIST ID " + listID, brick.data.getProperty('ID'), brick.data);
 
 			//Add the element to the master list
 			//We do it here, otherwise it will appear in the list, but the state won't be saved
-			_this.addElementToList(listID, elementID, elementData);
+			_this.lists[listID].addBrick(brick.data);
 
 			//Reload the list if it's the current one
 			if (listID == _this.active) {
 				_this.refreshList();
 			}
-
 		});
-	}
-
-	this.List.addElementToList = function(listID, elementID, elementData, updateInfos) {
-
-		//Default updateInfos to false
-		updateInfos = typeof updateInfos !== 'undefined' ? updateInfos : false;
-
-		//Just increment the qte.
-		if (this.lists[listID]['bricks'][elementID] != null && updateInfos == false) {
-
-			//Increment the already existing thing
-			//Make sure it's considered an int otherwise the + will concatenate the strings
-			this.lists[listID]['bricks'][elementID]['qte'] = parseInt(this.lists[listID]['bricks'][elementID]['qte']) + 1;
-
-		//We update the infos. We can't replace, or we'll replace the qte
-		} else if (this.lists[listID]['bricks'][elementID] != null) {
-
-			//Update infos
-			this.lists[listID]['bricks'][elementID]['Asset'] = elementData.Asset;
-			this.lists[listID]['bricks'][elementID]['ColourDescr'] = elementData.ColourDescr;
-			this.lists[listID]['bricks'][elementID]['ItemDescr'] = elementData.ItemDescr;
-			this.lists[listID]['bricks'][elementID]['DesignId'] = elementData.DesignId;
-			this.lists[listID]['bricks'][elementID]['Price'] = elementData.Price;
-			this.lists[listID]['bricks'][elementID]['CId'] = elementData.CId;
-			this.lists[listID]['bricks'][elementID]['elementID'] = elementID;
-
-		//We don't want to add new stuff if we are just updating the infos
-		} else if (updateInfos == false) {
-
-			//Create a new entry
-			this.lists[listID]['bricks'][elementID] = {
-				'Asset': elementData.Asset,
-				'ColourDescr': elementData.colourDescr,
-				'ItemDescr': elementData.ItemDescr,
-				'DesignId': elementData.DesignId,
-				'Price': elementData.Price,
-				'CId': elementData.CId,
-				'elementID': elementID,
-				'qte': 1
-			}
-		}
 	}
 
 	 /*

@@ -22,6 +22,11 @@ $context = stream_context_create($opts);
 // Open the file using the HTTP headers set above
 $data = file_get_contents('https://wwwsecure.us.lego.com/en-US/service/rpservice/getitemordesign?isSalesFlow=true&itemordesignnumber=' . $getitemordesign, false, $context);
 
+//Add the data requested to the returned data
+$data_json = json_decode($data, true);
+$data_json['REQUEST'] = $getitemordesign;
+$data = json_encode($data_json);
+
 //Return everything
 header('Content-type: application/json');
 echo $data;
