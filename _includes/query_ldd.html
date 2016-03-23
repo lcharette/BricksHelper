@@ -26,13 +26,17 @@
 				</div>
 			</div>
 		</div>
+<!--
 		<div class="form-group">
 			<label for="setNumber">Select country</label>
 			{% include county_list.html %}
 		</div>
+-->
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
+<!--
 		<button class="btn btn-default btn-previewLDD" onclick="App.LDDUpload.Preview();"><i class="fa fa-eye"></i> Preview parts found</button>
 		<button class="btn btn-primary btn-analyseLDD" onclick="App.LDDUpload.Analyse();"><i class="fa fa-search"></i> Find model value</button>
+-->
 		<!-- Sort button -->
 		<div class="btn-group pull-right">
 		  <button type="button" class="btn btn-default dropdown-toggle btn-sortLDD" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -164,7 +168,7 @@
 		$("#LDDUpload_dropzone").show();
 
 		//Reset some app stuff
-		App.LDDUpload.resetVars();
+		//App.LDDUpload.resetVars();
 		App.LDDUpload.UI_resetLDDPannel();
 
 		//Reset the upload progress

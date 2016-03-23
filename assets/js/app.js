@@ -449,11 +449,11 @@ PBHelper.prototype.LDDUpload = function() {
 	 */
 
 	this.LDDUpload.Parts = new Object;
-	this.LDDUpload.numberBricks = 0;
+	//this.LDDUpload.numberBricks = 0;
 	this.LDDUpload.numberElements = 0;
-	this.LDDUpload.PartsValue = 0;
+	//this.LDDUpload.PartsValue = 0;
 
-	this.LDDUpload.SetList = new Array;
+	//this.LDDUpload.SetList = new Array;
 
 	/*
 	 * LDDUpload UI svariables
@@ -471,30 +471,193 @@ PBHelper.prototype.LDDUpload = function() {
 	 */
 
 	//This function reset the variables
-	this.LDDUpload.resetVars = function() {
+	/*this.LDDUpload.resetVars = function() {
 		this.Parts = new Object;
 		this.numberBricks = 0;
 		this.numberElements = 0;
 		this.PartsValue = 0;
 
 		this.SetList = new Array;
-	}
+	}*/
 
 	//This function process the data received from the file and call the UI for display
 	this.LDDUpload.processLDDData = function(data, fileName) {
 
 		//1° Set our variable
-		this.Parts = data.bricks;
-		this.numberBricks = data.nb_bricks;
-		this.numberElements = data.nb_elements;
+		//this.Parts = data.bricks;
+		//this.numberBricks = data.nb_bricks;
+		//this.numberElements = data.nb_elements;
+
+		console.log("processLDDData", data);
 
 		//2° Set the UI
 		this.UI_setLDDPannel(fileName, data.nb_bricks, data.nb_elements, data.image);
 
+		//Reset Data
+		this.Parts = new LegoBrickList({
+			"fileName": fileName,
+			"asset": data.image,
+		});
+
+		//This will be used for the progress bar based on the number of elements found by PHP
+		this.numberElements = data.nb_elements;
+
+		//Reset the table
+		this.UI_resetPartsTable();
+
+		//Disabled the buttons
+		this.UI_disableButtons();
+
+		//Show the progress
+		this.UI_Progress_init();
+
+		//Variable to keep progress of the current number of part processed
+		var currentPart = 0;
+
+		//We are going into .each. We need to make "this" safe
+		var _this = this;
+
+		//We add each brick to the table
+		$.each(data.bricks, function( DesignId, color_data ){
+
+			//Start with analaytics
+			_this.parent.SendAnalytics(_this.parent.bricks_base_url + DesignId + "&country=" + _this.parent.country, "Get item or design");
+
+			$.ajax({
+
+				method: "GET",
+				timeout: _this.parent.AjaxTimeout * 1000,
+				url: _this.parent.bricks_base_url + DesignId + "&country=" + _this.parent.country,
+
+			}).always(function(data) {
+
+				//We use always because of the timeout because we want to catch cancel and not block
+				//the UI. This help checkout error.
+				if (data.statusText != null) {
+
+					//Show error to the user
+					//Set the text
+					//$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Error in AJAX request : Connexion timed out");
+
+					//Copy to the placeholder
+					//$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.SetPlaceholder));
+
+					//Send error to console
+					console.warn("Error in AJAX request : Connexion timed out", data);
+
+				} else if (data.Bricks == null) {
+
+					//Set the text
+					//$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Set " + data.REQUEST + " not found");
+
+					//Copy to the placeholder
+					//$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.SetPlaceholder));
+
+					//For debug purpose
+					console.warn("Element " + data.REQUEST + " not found");
+
+				} else {
+
+					//Send to cache
+					_this.parent.sendLEGODataToCache(data);
+
+					//Process each brick in result
+					$.each(color_data, function( colorCode, NbRequired ){
+
+						//1° We try to find a color match
+						//if (data != null) {
+							var found_brick = _this.parent.associateColor(colorCode, data.Bricks);
+						//}
+
+						//Create a brick
+						if (found_brick != -1) {
+							var b = new LegoElement(data.Bricks[found_brick].ItemNo, {
+								'designid' : data.Bricks[found_brick].DesignId,
+								'asset': data.ImageBaseUrl + data.Bricks[found_brick].Asset,
+								'itemDesc': data.Bricks[found_brick].ItemDescr,
+								'price': data.Bricks[found_brick].Price,
+								'currency': data.Bricks[found_brick].CId,
+								'stock': data.Bricks[found_brick].SQty
+							});
+
+							//set the brick color
+							b.setColorFromStr(data.Bricks[found_brick].ColourDescr);
+
+							//Add the created brick to the list
+							_this.Parts.addBrick(b, NbRequired);
+						} else {
+							console.warn("Color match not found for color code '" + colorCode + "' and designID '"+ DesignId +"'");
+						}
+
+						//2° Sum the list value
+						/*if (data != null && found_brick != -1 && data.Bricks[found_brick].Price != -1) {
+							_this.PartsValue = _this.PartsValue + data.Bricks[found_brick].Price * NbRequired;
+						}*/
+
+						//3° We prepare the brick Data line
+						/*var BrickData = {
+							"DesignId" : DesignId,
+							"colorCode" : colorCode,
+							"nbReq" : NbRequired
+						}*/
+
+						//4° If we have data, we merge it
+						/*if (data != null && found_brick != -1) {
+
+							//We send our default data with the found brick and the base url
+							BrickData = $.extend(BrickData, data.Bricks[found_brick], {"baseUrl" : data.ImageBaseUrl});
+
+						} else if (data != null) {
+
+							//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
+							BrickData = $.extend(BrickData, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : data.Bricks[0].ItemDescr, "Asset" : data.Bricks[0].Asset});
+						}
+
+						//5° Add line to the mighty table
+						_this.parent.AddPartsTableRow(
+							$(_this.UI.Main).find(_this.UI.LDDPannel + " > table > tbody"),	// Destination
+							$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
+							BrickData
+						);
+
+						//! TEST
+						_this.SetList.push(BrickData);
+						*/
+					});
+				}
+
+				//We update the progress
+			    currentPart++;
+			    _this.UI_Progress_update(currentPart);
+
+				//Check if we are done
+			    if (currentPart >= _this.numberElements) {
+				    _this.displayLists();
+					_this.Analyse_done();
+					_this.UI_Progress_done();
+				}
+
+			});
+		});
 	}
 
+	//This function take care of displaying lists elements
+	this.LDDUpload.displayLists = function() {
+
+
+		//All every bricks
+		for (var i in this.Parts.getBricks()) {
+			this.parent.AddElementToTable(
+				$(this.UI.Main).find(this.UI.LDDPannel + " > table > tbody"),	// Destination
+				$(this.UI.Main).find(this.UI.PartsTableSource), 				// Source
+				this.Parts.getBrick(i)											// Brick
+			);
+		}
+	}
+
+
 	//This function is called to preview the parts found in the LDD file
-	this.LDDUpload.Preview = function() {
+	/*this.LDDUpload.Preview = function() {
 
 		//Reset the table
 		this.UI_resetPartsTable();
@@ -522,105 +685,15 @@ PBHelper.prototype.LDDUpload = function() {
 		//Show the table
 		this.UI_showPartsTable();
 
-	}
+	}*/
 
 	//This function analyse the parts list and found each part info from LEGO service
-	this.LDDUpload.Analyse = function() {
+	/*this.LDDUpload.Analyse = function() {
 
-		//Reset the table
-		this.UI_resetPartsTable();
 
-		//Disabled the buttons
-		this.UI_disableButtons();
 
-		//Show the progress
-		this.UI_Progress_init();
 
-		//Variable to keep progress of the current number of part processed
-		var currentPart = 0;
-
-		//We are going into .each. We need to make "this" safe
-		var _this = this;
-
-		//We add each brick to the table
-		$.each(this.Parts, function( DesignId, color_data ){
-
-			//Start with analaytics
-			_this.parent.SendAnalytics(_this.parent.bricks_base_url + DesignId + "&country=" + _this.parent.country, "Get item or design");
-
-			$.ajax({
-
-				method: "GET",
-				url: _this.parent.bricks_base_url + DesignId + "&country=" + _this.parent.country,
-
-			}).done(function(data) {
-
-				//Send to cache
-				_this.parent.sendLEGODataToCache(data);
-
-				//Process each brick in result
-				$.each(color_data, function( colorCode, NbRequired ){
-
-					//1° We try to find a color match
-					if (data != null) {
-						var found_brick = _this.parent.associateColor(colorCode, data.Bricks);
-					}
-
-					//2° Sum the list value
-					if (data != null && found_brick != -1 && data.Bricks[found_brick].Price != -1) {
-						_this.PartsValue = _this.PartsValue + data.Bricks[found_brick].Price * NbRequired;
-					}
-
-					//3° We prepare the brick Data line
-					var BrickData = {
-						"DesignId" : DesignId,
-						"colorCode" : colorCode,
-						"nbReq" : NbRequired
-					}
-
-					//4° If we have data, we merge it
-					if (data != null && found_brick != -1) {
-
-						//We send our default data with the found brick and the base url
-						BrickData = $.extend(BrickData, data.Bricks[found_brick], {"baseUrl" : data.ImageBaseUrl});
-
-					} else if (data != null) {
-
-						//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
-						BrickData = $.extend(BrickData, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : data.Bricks[0].ItemDescr, "Asset" : data.Bricks[0].Asset});
-					}
-
-					//5° Add line to the mighty table
-					_this.parent.AddPartsTableRow(
-						$(_this.UI.Main).find(_this.UI.LDDPannel + " > table > tbody"),	// Destination
-						$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
-						BrickData
-					);
-
-					//! TEST
-					_this.SetList.push(BrickData);
-
-					//We update the progress
-				    currentPart++;
-				    _this.UI_Progress_update(currentPart);
-
-					//Check if we are done
-				    if (currentPart >= _this.numberElements) {
-						_this.Analyse_done();
-						_this.UI_Progress_done();
-					}
-
-				});
-
-			})
-			.fail(function(data) {
-				console.log("PBHELPER ERROR", data);
-			})
-			.always(function(data) {
-				//console.log("this.LDDUpload.Analyse AJAX", data);
-			});
-		});
-	}
+	}*/
 
 	this.LDDUpload.testString = function() {
 		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
@@ -639,7 +712,7 @@ PBHelper.prototype.LDDUpload = function() {
 	this.LDDUpload.Analyse_done = function() {
 
 		//We process and add the total row
-		this.Analyse_addTotalRow();
+		//this.Analyse_addTotalRow();
 
 		//We show the table
 		this.UI_showPartsTable();
@@ -705,19 +778,19 @@ PBHelper.prototype.LDDUpload = function() {
 
 	//This function disabled all button. Option can omit the destroy one
 	this.LDDUpload.UI_disableButtons = function(omitDestroy) {
-
-		omitDestroy = omitDestroy || false;
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".btn").attr('disabled', 'disabled');
+		/*omitDestroy = omitDestroy || false;
 
 		if (omitDestroy) {
 			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-sortLDD").attr('disabled', 'disabled');
 		} else {
 			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD, .btn-sortLDD").attr('disabled', 'disabled');
-		}
+		}*/
 	}
 
 	//This function reset the buttons state
 	this.LDDUpload.UI_resetButtons = function() {
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD, .btn-sortLDD").removeAttr('disabled');
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".btn").removeAttr('disabled');
 	}
 
 	//This function set the analyser progress bar
@@ -1797,6 +1870,12 @@ PBHelper.prototype.List = function() {
 
 		//Ref. for the idea of the dropdown:
 		//http://www.bootply.com/9CvIygzob8
+
+		//If there's no list, we hide the destination and quit
+		if (Object.keys(this.lists).length == 0) {
+			$(destination).hide();
+			return;
+		}
 
 		//Cleanup the old stuff
 		$(destination).find(".dropdown-menu").html("");
