@@ -98,16 +98,50 @@ function PBHelper (options) {
 		}
 
 		//On s'occupe des infos générales
-		$(template).find(".templateTable_row").find(".desingID").html( brick.data.getProperty('designid') );
-		$(template).find(".templateTable_row").find(".elementID").html( brick.data.getProperty('ID') );
 		$(template).find(".templateTable_row").find(".qte").html( brick.qte);
 		$(template).find(".templateTable_row").find(".asset").find("img").attr('src', brick.data.getProperty('asset') );
 		$(template).find(".templateTable_row").find(".desc").html( brick.data.getProperty('itemDesc') );
 		$(template).find(".templateTable_row").find(".color").html( brick.data.getProperty('colorName') );
-
-		//We need to do some additonnal stuff before adding the price
-		$(template).find(".templateTable_row").find(".price").html( brick.data.getProperty('priceStr') );
 		$(template).find(".templateTable_row").find(".priceTotal").html( brick.valueStr );
+
+		//Small thing for design ID and Element ID. We don't want to show "empty"
+		if (brick.data.getProperty('ID') <= 0) {
+			$(template).find(".templateTable_row").find(".elementID").html("");
+		} else {
+			$(template).find(".templateTable_row").find(".elementID").html( brick.data.getProperty('ID') );
+		}
+
+		if (brick.data.getProperty('designid') <= 0) {
+			$(template).find(".templateTable_row").find(".desingID").html("");
+		} else {
+			$(template).find(".templateTable_row").find(".desingID").html( brick.data.getProperty('designid') );
+		}
+
+		//We need to do some additonnal stuff before adding the price (Total is already ok)
+		//Case n°1 --> LEGO_PartNotAvailable :: Part element found (color found), but not in stock. Price will be "-1"
+		if (brick.data.getProperty('price') == -1) {
+
+			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartNotAvailable").clone();
+			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
+
+		//Case n°2 --> LEGO_PartColorNotFound :: Part desing ID was found, but no color match. ElementID will be empty
+		} else if (brick.data.getProperty('price') == -2) {
+
+			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartColorNotFound").clone();
+			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
+
+		//Case n°3 --> LEGO_PartNotFound :: Part description was not found.
+		} else if (brick.data.getProperty('price') == -3) {
+
+			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartNotFound").clone();
+			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
+
+		//Case n°4 --> Everything is found !
+		} else {
+			$(template).find(".templateTable_row").find(".price").html( brick.data.getProperty('priceStr') );
+
+		}
+
 
 		//Copy the line
 		var t = $(template).find(".templateTable_row").clone();
@@ -120,7 +154,11 @@ function PBHelper (options) {
 
 		//Setup the add button. The "List" thingny is responsible for populating the
 		//list name in the list selector
-		this.List.setupAddButton($(t).find(".listAdd"));
+		if (brick.data.getProperty('ID') > 0) {
+			this.List.setupAddButton($(t).find(".listAdd"));
+		} else {
+			$(t).find(".listAdd").hide();
+		}
 
 		//Keep this safe for the next part
 		var _this = this;
@@ -382,7 +420,7 @@ function PBHelper (options) {
 				//Send the data to the array which will be sorted
 				rowListSorted.push([
 			    	rowList[row][SortBy],	//Sortby value
-			    	rowList[row]			//Data
+			    	row			//Data
 			    ]);
 
 			//Case n° 2
@@ -391,7 +429,7 @@ function PBHelper (options) {
 				//Send the data to the array which will be sorted
 				rowListSorted.push([
 			    	rowList[row].data.getProperty(SortBy),	//Sortby value
-			    	rowList[row]							//Data
+			    	row							//Data
 			    ]);
 			}
 		}
@@ -404,7 +442,7 @@ function PBHelper (options) {
 		var retour = new Array();
 		for (var i = 0; i < rowListSorted.length; ++i) {
 			var row = rowListSorted[i];
-			retour.push(row[1].ID);
+			retour.push(row[1]); //!TODO HERE
 		}
 
 		//If we asked for descending order, we do it here.
@@ -449,11 +487,9 @@ PBHelper.prototype.LDDUpload = function() {
 	 */
 
 	this.LDDUpload.Parts = new Object;
-	//this.LDDUpload.numberBricks = 0;
 	this.LDDUpload.numberElements = 0;
-	//this.LDDUpload.PartsValue = 0;
-
-	//this.LDDUpload.SetList = new Array;
+	this.LDDUpload.SortValue = "ID";
+	this.LDDUpload.SortOrder = "ASC";
 
 	/*
 	 * LDDUpload UI svariables
@@ -483,16 +519,6 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function process the data received from the file and call the UI for display
 	this.LDDUpload.processLDDData = function(data, fileName) {
 
-		//1° Set our variable
-		//this.Parts = data.bricks;
-		//this.numberBricks = data.nb_bricks;
-		//this.numberElements = data.nb_elements;
-
-		console.log("processLDDData", data);
-
-		//2° Set the UI
-		this.UI_setLDDPannel(fileName, data.nb_bricks, data.nb_elements, data.image);
-
 		//Reset Data
 		this.Parts = new LegoBrickList({
 			"fileName": fileName,
@@ -500,7 +526,7 @@ PBHelper.prototype.LDDUpload = function() {
 		});
 
 		//This will be used for the progress bar based on the number of elements found by PHP
-		this.numberElements = data.nb_elements;
+		this.numberElements = Object.keys(data.bricks).length;
 
 		//Reset the table
 		this.UI_resetPartsTable();
@@ -556,6 +582,23 @@ PBHelper.prototype.LDDUpload = function() {
 					//For debug purpose
 					console.warn("Element " + data.REQUEST + " not found");
 
+					//Process each brick in result
+					$.each(color_data, function( colorCode, NbRequired ){
+
+						//We will add it to the list to show it
+						var b = new LegoElement({
+							'designid' : parseInt(data.REQUEST),
+							'asset': _this.parent.defaultImage,
+							'price': -3, //Error code
+						});
+
+						//set the brick color
+						b.setColor(colorCode);
+
+						//Add the created brick to the list
+						_this.Parts.addBrick(b, NbRequired);
+					});
+
 				} else {
 
 					//Send to cache
@@ -565,14 +608,13 @@ PBHelper.prototype.LDDUpload = function() {
 					$.each(color_data, function( colorCode, NbRequired ){
 
 						//1° We try to find a color match
-						//if (data != null) {
-							var found_brick = _this.parent.associateColor(colorCode, data.Bricks);
-						//}
+						var found_brick = _this.parent.associateColor(colorCode, data.Bricks);
 
 						//Create a brick
 						if (found_brick != -1) {
-							var b = new LegoElement(data.Bricks[found_brick].ItemNo, {
-								'designid' : data.Bricks[found_brick].DesignId,
+							var b = new LegoElement({
+								'ID' : parseInt(data.Bricks[found_brick].ItemNo),
+								'designid' : parseInt(data.Bricks[found_brick].DesignId),
 								'asset': data.ImageBaseUrl + data.Bricks[found_brick].Asset,
 								'itemDesc': data.Bricks[found_brick].ItemDescr,
 								'price': data.Bricks[found_brick].Price,
@@ -585,44 +627,24 @@ PBHelper.prototype.LDDUpload = function() {
 
 							//Add the created brick to the list
 							_this.Parts.addBrick(b, NbRequired);
+
 						} else {
+
 							console.warn("Color match not found for color code '" + colorCode + "' and designID '"+ DesignId +"'");
+
+							var b = new LegoElement({
+								'designid' : parseInt(data.Bricks[0].DesignId),
+								'asset': data.ImageBaseUrl + data.Bricks[0].Asset,
+								'itemDesc': data.Bricks[0].ItemDescr,
+								'price': -2,
+							});
+
+							//set the brick color
+							b.setColor(colorCode);
+
+							//Add the created brick to the list
+							_this.Parts.addBrick(b, NbRequired);
 						}
-
-						//2° Sum the list value
-						/*if (data != null && found_brick != -1 && data.Bricks[found_brick].Price != -1) {
-							_this.PartsValue = _this.PartsValue + data.Bricks[found_brick].Price * NbRequired;
-						}*/
-
-						//3° We prepare the brick Data line
-						/*var BrickData = {
-							"DesignId" : DesignId,
-							"colorCode" : colorCode,
-							"nbReq" : NbRequired
-						}*/
-
-						//4° If we have data, we merge it
-						/*if (data != null && found_brick != -1) {
-
-							//We send our default data with the found brick and the base url
-							BrickData = $.extend(BrickData, data.Bricks[found_brick], {"baseUrl" : data.ImageBaseUrl});
-
-						} else if (data != null) {
-
-							//We send our default data with the base url and add some part details since we don't have a brick, but we still have *some* info
-							BrickData = $.extend(BrickData, {"baseUrl" : data.ImageBaseUrl, "ItemDescr" : data.Bricks[0].ItemDescr, "Asset" : data.Bricks[0].Asset});
-						}
-
-						//5° Add line to the mighty table
-						_this.parent.AddPartsTableRow(
-							$(_this.UI.Main).find(_this.UI.LDDPannel + " > table > tbody"),	// Destination
-							$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
-							BrickData
-						);
-
-						//! TEST
-						_this.SetList.push(BrickData);
-						*/
 					});
 				}
 
@@ -632,9 +654,23 @@ PBHelper.prototype.LDDUpload = function() {
 
 				//Check if we are done
 			    if (currentPart >= _this.numberElements) {
+
+				    //Set the UI
+					_this.UI_setLDDPannel(
+						_this.Parts.getProperty('fileName'),
+						_this.Parts.getNbBricks(),
+						_this.Parts.getNbElements(),
+						_this.Parts.getProperty('asset')
+					);
+
+					//Stop the progress
+				    _this.UI_Progress_done();
+
+				    //Display the list
 				    _this.displayLists();
-					_this.Analyse_done();
-					_this.UI_Progress_done();
+
+					//To set the buttons, we reable them and disabled again with the switch
+					_this.UI_resetButtons();
 				}
 
 			});
@@ -644,58 +680,28 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function take care of displaying lists elements
 	this.LDDUpload.displayLists = function() {
 
+		//Vide la liste existante
+		this.UI_resetPartsTable();
+
+		//Sort the list
+		//Be careful here: sorted list will ONLY return an array of elementID (keys) based on the order the list needs to be displayed.
+		//We don't send the whole object sorted because apparently that CAN'T be done.
+		var sortedList = this.parent.SortList(this.Parts.getBricks(), this.SortValue, this.SortOrder);
 
 		//All every bricks
-		for (var i in this.Parts.getBricks()) {
+		for (var i in sortedList) {
 			this.parent.AddElementToTable(
 				$(this.UI.Main).find(this.UI.LDDPannel + " > table > tbody"),	// Destination
 				$(this.UI.Main).find(this.UI.PartsTableSource), 				// Source
-				this.Parts.getBrick(i)											// Brick
+				this.Parts.getBrick(sortedList[i])											// Brick
 			);
 		}
+
+		//We show the table
+		this.UI_showPartsTable();
 	}
 
-
-	//This function is called to preview the parts found in the LDD file
-	/*this.LDDUpload.Preview = function() {
-
-		//Reset the table
-		this.UI_resetPartsTable();
-
-		//We are going into .each. We need to make "this" safe
-		var _this = this;
-
-		//We add each brick to the table
-		$.each(this.Parts, function( DesignId, color_data ){
-			$.each(color_data, function( colorCode, NbRequired ){
-
-				_this.parent.AddPartsTableRow(
-					$(_this.UI.Main).find(_this.UI.LDDPannel + " > table > tbody"),	// Destination
-					$(_this.UI.Main).find(_this.UI.PartsTableSource), 		// Source
-					{														// BricksData
-						"DesignId" : DesignId,
-						"colorCode" : colorCode,
-						"nbReq" : NbRequired
-					},
-					true													// Preview
-				);
-			});
-		});
-
-		//Show the table
-		this.UI_showPartsTable();
-
-	}*/
-
-	//This function analyse the parts list and found each part info from LEGO service
-	/*this.LDDUpload.Analyse = function() {
-
-
-
-
-	}*/
-
-	this.LDDUpload.testString = function() {
+	/*this.LDDUpload.testString = function() {
 		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
 		$.each(this.SetList, function(i,brick) {
 			if (brick.SQty >= brick.nbReq) {
@@ -706,21 +712,7 @@ PBHelper.prototype.LDDUpload = function() {
 		});
 		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
 		console.log(reponse);
-	}
-
-	//This function is called when all parts are analysed. Show the table and set the UI
-	this.LDDUpload.Analyse_done = function() {
-
-		//We process and add the total row
-		//this.Analyse_addTotalRow();
-
-		//We show the table
-		this.UI_showPartsTable();
-
-		//To set the buttons, we reable them and disabled again with the switch
-		this.UI_resetButtons();
-		//this.UI_disableButtons(true);
-	}
+	}*/
 
 	//This function add the total row to the table
 	this.LDDUpload.Analyse_addTotalRow = function() {
@@ -730,6 +722,18 @@ PBHelper.prototype.LDDUpload = function() {
 
 		//We copy it to the pannel
 		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.LDDPannel + " > table > tfoot"));
+	}
+
+	//This function is called by the UI to change the order of the list.
+	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
+	this.LDDUpload.SortTable = function(SortBy, Order) {
+
+		//Save the order
+		this.SortValue = SortBy;
+		this.SortOrder = Order;
+
+		//Refresh the list
+		this.displayLists();
 	}
 
 	/*
@@ -779,13 +783,6 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function disabled all button. Option can omit the destroy one
 	this.LDDUpload.UI_disableButtons = function(omitDestroy) {
 		$(this.UI.Main).find(this.UI.LDDPannel).find(".btn").attr('disabled', 'disabled');
-		/*omitDestroy = omitDestroy || false;
-
-		if (omitDestroy) {
-			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-sortLDD").attr('disabled', 'disabled');
-		} else {
-			$(this.UI.Main).find(this.UI.LDDPannel).find(".btn-analyseLDD, .btn-previewLDD, .btn-deleteLDD, .btn-sortLDD").attr('disabled', 'disabled');
-		}*/
 	}
 
 	//This function reset the buttons state
@@ -810,10 +807,6 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function hide the analyser progress bar.
 	this.LDDUpload.UI_Progress_done = function() {
 		$(this.UI.Main).find(this.UI.Progress).hide();
-	}
-
-	this.LDDUpload.SortTable = function(SortBy, Order) {
-		this.parent.SortTable(this.UI.LDDPannel + " > table > tbody", SortBy, Order);
 	}
 }
 
@@ -934,8 +927,9 @@ PBHelper.prototype.SetSearch = function() {
 					$.each(data.Bricks, function( index, brick ){
 
 						//Create a brick
-						var b = new LegoElement(brick.ItemNo, {
-							'designid' : brick.DesignId,
+						var b = new LegoElement({
+							'ID' : parseInt(brick.ItemNo),
+							'designid' : parseInt(brick.DesignId),
 							'asset': data.ImageBaseUrl + brick.Asset,
 							'itemDesc': brick.ItemDescr,
 							'price': brick.Price,
@@ -1186,8 +1180,9 @@ PBHelper.prototype.BrickSearch = function() {
 					$.each(data.Bricks, function( index, brick ){
 
 						//Create a brick
-						var b = new LegoElement(brick.ItemNo, {
-							'designid' : brick.DesignId,
+						var b = new LegoElement({
+							'ID' : parseInt(brick.ItemNo),
+							'designid' : parseInt(brick.DesignId),
 							'asset': data.ImageBaseUrl + brick.Asset,
 							'itemDesc': brick.ItemDescr,
 							'price': brick.Price,
@@ -1385,8 +1380,7 @@ PBHelper.prototype.List = function() {
 
 	 this.List.lists = new Object();
 	 this.List.active = 0;
-	 //this.List.PartsValue = 0;
-	 this.List.SortValue = "elementID";
+	 this.List.SortValue = "ID";
 	 this.List.SortOrder = "ASC";
 
 	/*
@@ -1579,7 +1573,8 @@ PBHelper.prototype.List = function() {
 			$.each(list.bricks, function(i, brick) {
 
 				//Create a brick object
-				var b = new LegoElement(brick.elementID, {
+				var b = new LegoElement({
+					'ID' : parseInt(brick.elementID),
 					'designid' : parseInt(brick.designID),
 					'asset' : _this.parent.LEGOBaseURL + brick.Asset,
 					'itemDesc' : brick.ItemDescr,
@@ -1781,17 +1776,19 @@ PBHelper.prototype.List = function() {
 		//We are going into .each. We need to make "this" safe
 		var _this = this;
 
+		var bricks = this.lists[this.active].getBricks();
+
 		//We add each brick to the table
-		for (var key in this.lists[this.active].getBricks()) {
+		for (var key in bricks) {
 
 			//Start with analaytics
-			this.parent.SendAnalytics(this.parent.bricks_base_url + key + "&country=" + this.parent.country, "Get item or design from list");
+			this.parent.SendAnalytics(this.parent.bricks_base_url + bricks[key].data.getProperty('ID') + "&country=" + this.parent.country, "Get item or design from list");
 
 			$.ajax({
 
 				method: "GET",
 				timeout: _this.parent.AjaxTimeout * 1000,
-				url: this.parent.bricks_base_url + key + "&country=" + this.parent.country,
+				url: this.parent.bricks_base_url + bricks[key].data.getProperty('ID') + "&country=" + this.parent.country,
 
 			}).always(function(data) {
 
@@ -1815,7 +1812,10 @@ PBHelper.prototype.List = function() {
 					_this.parent.sendLEGODataToCache(data);
 
 					//Get the brick and put it a var for shortcut
+					//!TODO HERE
 					var brick = _this.lists[_this.active].getBrick(data.REQUEST);
+
+					//!TODO HERE !!!!!!!
 
 					//Update the price from the list brick element
 					brick.data.setProperty("price", data.Bricks[0].Price);
@@ -2107,7 +2107,6 @@ function LegoBrickList(initData) {
 	 * Private variables
 	 */
 
-	var self = this;
 	var bricks = new Object();
 	var properties = {};
 	var listValue = 0;
@@ -2118,14 +2117,19 @@ function LegoBrickList(initData) {
 
 	this.setProperties = function(data) {
 		for (var key in data) {
-			self.setProperty(key, data[key]);
+			this.setProperty(key, data[key]);
 		}
 		return true;
 	}
 
 	this.setProperty = function(key, value) {
-		properties[key] = value;
-		return true;
+		if (key == "bricks") {
+			console.warn("LegoBrickList : Property 'bricks' can't be set or overwritten this way.");
+			return false
+		} else {
+			properties[key] = value;
+			return true;
+		}
 	}
 
 	this.getProperties = function() {
@@ -2144,7 +2148,8 @@ function LegoBrickList(initData) {
 		}
 
 		//Small shortcut fot the brick ID
-		var i = lego_element.getProperty("ID"); //.toString();
+		//var i = lego_element.getProperty("ID");
+		var i = this.getNbElements() + 1;
 
 		//if quantity is undefined, we set it to 1
 		if (qte == undefined) { qte = 1; }
@@ -2154,7 +2159,7 @@ function LegoBrickList(initData) {
 
 			//Add the brick to the list
 			bricks[i] = new Object();
-			bricks[i].ID = i;
+			//1bricks[i].ID = i;
 			bricks[i].qte = qte;
 			bricks[i].data = lego_element;
 
@@ -2166,49 +2171,51 @@ function LegoBrickList(initData) {
 		}
 	}
 
+	//! TODO : Delete brick
+
 	this.getBricks = function() {
 
 		//Create the return variable
 		var retour = new Object;
 
 		//Parse each bricks to add the calculated data
-		for (var ID in bricks) {
-			retour[ID] = this.getBrick(ID);
+		for (var i in bricks) {
+			retour[i] = this.getBrick(i);
 		}
 
 		return retour;
 	}
 
-	this.getBrick = function(ID) {
+	this.getBrick = function(i) {
 
 		//Store the brick data in a temp var
-		temp = bricks[ID];
+		temp = bricks[i];
 
 		if (temp == null) {
 			return null;
 		}
 
 		//Add calculated properties
-		temp.value = 	getBrickValue(bricks[ID].data, bricks[ID].qte, false);
-		temp.valueStr = getBrickValue(bricks[ID].data, bricks[ID].qte, true)
+		temp.value = 	getBrickValue(bricks[i].data, bricks[i].qte, false);
+		temp.valueStr = getBrickValue(bricks[i].data, bricks[i].qte, true)
 
 		//Done
 		return temp;
 	}
 
-	this.getBrickData = function(ID) {
+	/*this.getBrickData = function(i) {
 
 		//Get the properties and put them in the return object
-		var obj = bricks[ID].data.getProperties();
+		var obj = bricks[i].data.getProperties();
 
 		//Adding the quantity to the return object
-		obj['qte'] = bricks[ID].qte;
-		obj['value'] = 		getBrickValue(bricks[ID].data, bricks[ID].qte, false);
-		obj['valueStr'] = 	getBrickValue(bricks[ID].data, bricks[ID].qte, true);
+		obj['qte'] = 		bricks[i].qte;
+		obj['value'] = 		getBrickValue(bricks[i].data, bricks[i].qte, false);
+		obj['valueStr'] = 	getBrickValue(bricks[i].data, bricks[i].qte, true);
 
 		//Done !
 		return obj;
-	}
+	}*/
 
 	this.getNbBricks = function() {
 
@@ -2286,7 +2293,7 @@ function LegoBrickList(initData) {
 	if (typeof(initData) == "object") {
 
 		for (var key in initData) {
-			self.setProperty(key, initData[key]);
+			this.setProperty(key, initData[key]);
 		}
 
 	 } else if (initData != undefined) {
@@ -2300,13 +2307,7 @@ function LegoBrickList(initData) {
  //! ------------- Lego Element -------------
  */
 
-function LegoElement(ID, initData) {
-
-	ID = parseInt(ID);
-
-	if (typeof(ID) != "number" || ID <= 0) {
-		throw new Error("LegoElement : Valid element ID required - " + ID);
-	}
+function LegoElement(initData) {
 
 	/*
 	 * Public variables
@@ -2317,10 +2318,10 @@ function LegoElement(ID, initData) {
 	 */
 
 	//var ID = ID;
-	var self = this;
 	var colorCode = 0;
 	var colorLegoStr = "";
 	var properties = {
+		'ID' : 0,
 		'designid' : 0,
 		'asset' : "assets/img/defaultimg.gif",
 		'itemDesc' : "",
@@ -2349,9 +2350,12 @@ function LegoElement(ID, initData) {
 
 	this.setColor = function(code) {
 
+		//Make sure it's an INT
+		code = parseInt(code);
+
 		//Check the param
 		if (typeof(code) != "number" || code <= 0) {
-			throw new Error("LegoElement : Valid color code -> " + code);
+			throw new Error("LegoElement : Invalid color code -> " + code);
 		}
 
 		//Do it
@@ -2379,7 +2383,6 @@ function LegoElement(ID, initData) {
 		temp = properties;
 
 		//Add privates and computed properties
-		temp['ID'] = ID;
 		temp['priceStr'] = getPriceString();
 		temp['color'] = colorCode;
 		temp['colorName'] = getColorName(colorCode);
@@ -2392,10 +2395,7 @@ function LegoElement(ID, initData) {
 	this.getProperty = function(key) {
 
 		//Cutom property 'ID'
-		if (key == "ID") {
-			return ID;
-
-		} else if (key == "priceStr") {
+		if (key == "priceStr") {
 			return getPriceString();
 
 		} else if (key == "color") {
@@ -2494,11 +2494,11 @@ function LegoElement(ID, initData) {
 	 if (typeof(initData) == "object") {
 
 		for (var key in initData) {
-			self.setProperty(key, initData[key]);
+			this.setProperty(key, initData[key]);
 		}
 
 	 } else if (initData != undefined) {
-		 console.warn("LegoElement : initData ignored - Invalid object.");
+		 console.warn("LegoElement : initData ignored - Invalid object.", initData);
 	 }
 
 	 return true;
