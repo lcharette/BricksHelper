@@ -1418,12 +1418,16 @@ PBHelper.prototype.List = function() {
 			$(t).attr('id', '');
 
 			//Set the data inside template
-			$(t).find("h4").html( listData.getProperty('name') );
+			$(t).find(".panel-heading").html( listData.getProperty('name') );
 			$(t).find("img").attr('src', listData.getProperty('image') );
-			$(t).find("p.createdOn > span").html( listData.getProperty('createdOn') );
 			$(t).find("p.nbPieces > span").html( listData.getNbBricks() );
 			$(t).find("p.nbElements > span").html( listData.getNbElements() );
 			$(t).data("listID", listID);
+
+			//Taking care of formating the dates
+			//See: http://momentjs.com/
+			$(t).find("p.createdOn > span").html( moment( listData.getProperty('createdOn') * 1000 ).format('LLL') );
+
 
 			//Add to the DOM destination
 			$(t).appendTo($(_this.UI.Main).find(_this.UI.Mainlist).find(_this.UI.Lists));

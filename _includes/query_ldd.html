@@ -153,6 +153,9 @@
 				App.LDDUpload.processLDDData(data, file.name);
 			}
 		});
+
+		// Disable auto discover for all elements:
+		Dropzone.autoDiscover = false;
 	})
 
 
@@ -167,10 +170,4 @@
 		//Reset the upload progress
 		$("#LDDUpload_progress > div").css("width", "0%");
 	}
-</script>
-
-<script src="assets/js/dropzone.js"></script>
-<script>
-	// Disable auto discover for all elements:
-	Dropzone.autoDiscover = false;
 </script>

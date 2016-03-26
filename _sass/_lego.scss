@@ -88,16 +88,16 @@ label > small {
 	padding-right: 10px;
 }
 
-.nav-app-list .listsPlaceholder h4 {
-	margin-bottom: 5px;
-	color: black;
-	text-decoration: none;
-}
 .nav-app-list .listsPlaceholder p {
 	margin: 0px;
+	color: black;
 	font-size: 85%;
-	color: lightgrey;
-	text-decoration: none;
+}
+
+.nav-app-list .listsPlaceholder a,
+.nav-app-list .listsPlaceholder a:hover,
+.nav-app-list .listsPlaceholder a:focus {
+    text-decoration: none;
 }
 
 .nav-app-list .listsPlaceholder .panel {
