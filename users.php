@@ -199,6 +199,40 @@ $session = new session();
 
 		break;
 
+		//! DELETE LIST
+		case 'deleteList':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'msg' => "Not logged in",
+				));
+			}
+
+			//Get the post data
+			$listID = request_var('listID', 0);
+
+			//Get infos from the list. This is just make sure the list is owned by the user
+			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			if (empty($result)) {
+				returnPage(array(
+					'errorCode' => 410,
+					'msg' => "List not owned",
+				));
+			}
+
+			//Do it. Use the userID again for additionnal security
+			$MySQL->delete("userlists", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			//Retourne un succès
+			returnPage(array(
+				'success' 	=> true,
+			));
+
+		break;
+
 		//! ADD ELEMENT TO LIST
 		case 'addElementToList':
 
@@ -248,6 +282,44 @@ $session = new session();
 			} else {
 				$MySQL->update("listElements", array('qte' => ($result_element['qte'] + 1)), array('ID' => $result_element['ID']));
 			}
+
+			returnPage(array(
+				'success' 	=> true,
+			));
+
+		break;
+
+		//! DEL ELEMENT FROM LIST
+		case 'delElementfromList':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'msg' => "Not logged in",
+				));
+			}
+
+			//Get the post data
+			$listID = request_var('listID', 0);
+			$elementID = request_var('elementID', 0);
+
+			//Get infos from the list. This is just make sure the list is owned by the user
+			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			if (empty($result)) {
+				returnPage(array(
+					'errorCode' => 410,
+					'msg' => "List not owned",
+				));
+			}
+
+			//Do it
+			$MySQL->delete("listElements", array(
+				"elementID" => $elementID,
+				"AND listID" => $listID
+			));
+
 
 			returnPage(array(
 				'success' 	=> true,

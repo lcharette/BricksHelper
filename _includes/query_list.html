@@ -46,11 +46,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="form-group">
-				<label for="setNumber">Select country</label>
-				{% include county_list.html %}
-			</div>
-			<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Delete list</button>
+			<button class="btn btn-danger btn-deleteLDD" onclick="App.List.deleteList();"><i class="fa fa-trash-o"></i> Delete list</button>
 			<button class="btn btn-primary btn-analyseLDD" onclick="App.List.Analyse();"><i class="fa fa-search"></i> Find value</button>
 			<!-- Sort button -->
 			<div class="pull-right btn-group">
@@ -94,6 +90,7 @@
 					<th>Qte used</th>
 					<th>Unit price</th>
 					<th>Total price</th>
+					<th>Action</th>
 				</tr>
 			</thead>
 			<tbody></tbody>
@@ -162,7 +159,7 @@
 					<td width="100%">
 						<h4></h4>
 						<p class="createdOn">Created on: <span></span></p>
-						<p class="nbPieces">Number of peices: <span></span></p>
+						<p class="nbPieces">Number of pieces: <span></span></p>
 						<p class="nbElements">Number of unique elements: <span></span></p>
 					</td>
 					<td nowrap="nowrap" class="icon"><i class="fa fa-chevron-right"></i></td>
@@ -185,6 +182,9 @@
 			<td class="qte v-align-middle" align="center"></td>
 			<td class="price v-align-middle" align="center"></td>
 			<td class="priceTotal v-align-middle" align="center"></td>
+			<td class="action v-align-middle" align="center">
+				<a class="btn btn-sm btn-danger" href="javascript:void(0)"><i class="fa fa-trash"></i></a>
+			</td>
 		</tr>
 		<tr class="templateTable_Totalrow">
 			<td colspan="6" align="right"><strong>Total: <span class="txtTotal"></span></strong></td>

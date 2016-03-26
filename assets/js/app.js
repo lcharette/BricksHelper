@@ -142,7 +142,6 @@ function PBHelper (options) {
 
 		}
 
-
 		//Copy the line
 		var t = $(template).find(".templateTable_row").clone();
 
@@ -170,149 +169,35 @@ function PBHelper (options) {
 			_this.List.addElement($(this).parents(".listAdd").data('listid'), brick);
 		});
 
+		//Taking care of the action buttons
+		$(t).find(".action .btn-danger").click(function() {
+			bootbox.confirm({
+				title: "Delete from list?",
+				message: "Are you sure you want to delete <strong>"+brick.data.getProperty('itemDesc')+"</strong> in "+brick.data.getProperty('colorName')+" from this list?",
+				buttons: {
+			        'cancel': {
+			            label: 'Cancel',
+			            className: 'btn-default pull-left'
+			        },
+			        'confirm': {
+			            label: 'Delete',
+			            className: 'btn-danger pull-right'
+			        }
+			    },
+			    callback: function(result) {
+					if (result) {
+				  		_this.List.deleteElement(brick);
+				  	}
+				}
+			});
+		});
+
 		//Add the copied line to the template
 		$(t).appendTo(destination);
 
 		//Because the temp,late will retain the class if we don't remove it
 		$(template).find(".templateTable_row").find(".asset").find("img").removeClass("bw-image");
 	}
-
-	//This function add a part row to a table. One function to rule them all
-	/*this.AddPartsTableRow = function(destination, template, brickData, preview) {
-
-		//Some data is required
-		if (destination == null) {
-			console.log("PBHELPER ERROR", "Non optinal option missing in tableAddPart function", "table");
-			return;
-		}
-		if (template == null) {
-			console.log("PBHELPER ERROR", "Non optinal option missing in tableAddPart function", "template");
-			return;
-		}
-
-		//We parse the brickData to fill in blanks
-		brickData.nbReq = brickData.nbReq || "";						//NB Required in the set
-		brickData.ItemNo = brickData.ItemNo || "";						//Element ID
-		brickData.baseUrl = brickData.baseUrl || "";					//The Part image base url
-		brickData.Asset = brickData.Asset || "";						//The Part image
-		brickData.ItemDescr = brickData.ItemDescr || "";				//The Part description
-		brickData.Price = brickData.Price || "";						//The Part price
-		brickData.CId = brickData.CId || "";							//The Part price currency
-		preview = preview || false;										//[Optional] it's a preview, so we don't mind errors
-
-		//Before adding a new line, we try to find the color name
-		if (brickData.colorCode != null) {
-			var color_name = this.getColorName(brickData.colorCode);
-		} else {
-			var color_name = brickData.ColourDescr;
-		}
-
-		//We also format the CId
-		if (brickData.CId != "") {
-			brickData.CId = " $" + brickData.CId;
-		}
-
-		//Format the image path
-		if (brickData.Asset != "" && brickData.baseUrl != "") {
-			var PartImage = brickData.baseUrl + brickData.Asset;
-		} else {
-			var PartImage = this.defaultImage;
-		}
-
-		//On s'occupe des infos générales
-		$(template).find(".templateTable_row").find(".desingID").html(brickData.DesignId);
-		$(template).find(".templateTable_row").find(".elementID").html(brickData.ItemNo);
-		$(template).find(".templateTable_row").find(".qte").html(brickData.nbReq);
-		$(template).find(".templateTable_row").find(".asset").find("img").attr('src', PartImage);
-		$(template).find(".templateTable_row").find(".desc").html(brickData.ItemDescr);
-		$(template).find(".templateTable_row").find(".color").html(color_name);
-
-		//Some var for later
-		var elementPrice = 0;
-		var elementPriceStr = "";
-
-		//We try to format the error
-		//1° LEGO_PartNotAvailable :: Part element found (color found), but not in stock. Price will be "-1"
-		if (brickData.Price == -1 && !preview) {
-			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartNotAvailable").clone();
-			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
-			$(template).find(".templateTable_row").find(".priceTotal").html("-");
-
-			//We also change the color code to help sorting
-			elementPrice = "-1";
-			elementPriceStr = "-";
-
-		//2° LEGO_PartColorNotFound :: Part desing ID was found, but no color match. ElementID will be empty
-		} else if (brickData.ItemNo == "" && brickData.ItemDescr != "" && !preview) {
-			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartColorNotFound").clone();
-			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
-			$(template).find(".templateTable_row").find(".priceTotal").html("-");
-
-			//We will aso modify the image class
-			$(template).find(".templateTable_row").find(".asset").find("img").addClass("bw-image");
-
-			//We also change the color code to help sorting
-			elementPrice = "-2";
-			elementPriceStr = "-";
-
-
-		//3° LEGO_PartNotFound :: Part description was not found.
-		} else if (brickData.ItemDescr == "" && !preview) {
-			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartNotFound").clone();
-			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
-			$(template).find(".templateTable_row").find(".priceTotal").html("-");
-
-			//We also change the color code to help sorting
-			elementPrice = "-3";
-			elementPriceStr = "-";
-
-		//4° If we won't have price yet, show something other than "0" to avoid confusion
-		} else if (brickData.Price == 0 && brickData.CId == "") {
-
-			$(template).find(".templateTable_row").find(".price").html("-");
-			$(template).find(".templateTable_row").find(".priceTotal").html("-");
-
-			//We also change the color code to help sorting
-			elementPrice = 0;
-			elementPriceStr = "";
-
-		//5° No error were found...
-		} else {
-			$(template).find(".templateTable_row").find(".price").html(this.roundPrice(brickData.Price) + brickData.CId);
-			$(template).find(".templateTable_row").find(".priceTotal").html(this.roundPrice(brickData.Price*brickData.nbReq) + brickData.CId);
-
-			//We also change the color code to help sorting
-			elementPrice = brickData.Price;
-			elementPriceStr = this.roundPrice(brickData.Price) + brickData.CId;
-		}
-
-		//Copy the line
-		var t = $(template).find(".templateTable_row").clone();
-
-		//Change the ID
-		$(t).attr('id', brickData.ItemNo + "-" + brickData.colorCode);
-
-		//Add the sort info to the line
-		$(t).data('DesignId', brickData.DesignId);
-		$(t).data('elementid', brickData.ItemNo);
-		$(t).data('qte', brickData.nbReq);
-		$(t).data('ItemDescr', brickData.ItemDescr);
-		$(t).data('color', color_name);
-		$(t).data('ColourDescr', brickData.ColourDescr);
-		$(t).data('Price', brickData.Price);
-		$(t).data('CId', brickData.CId);
-		$(t).data('Asset', brickData.Asset);
-		$(t).data('total', brickData.Price * brickData.nbReq);
-
-		//Setup the add button
-		this.List.setupAddButton($(t).find(".listAdd"), brickData.ItemNo);
-
-		//Add the copied line to the template
-		$(t).appendTo(destination);
-
-		//Because the temp,late will retain the class if we don't remove it
-		$(template).find(".templateTable_row").find(".asset").find("img").removeClass("bw-image");
-	}*/
 
 	//This function is used from the HTML select element
 	this.updateCountry = function(element) {
@@ -350,57 +235,6 @@ function PBHelper (options) {
 			});
 		}
 	}
-
-	/*this.SortTable = function(TableSource, SortBy, Order) {
-
-		//Build a list of all the items in the table
-		var rowList = new Object();
-		$.each($(TableSource + " > tr"), function (i, row) {
-			rowList[$(row).attr('id')] = $(row).data(SortBy);
-		});
-
-		//Sort everything
-		//Source: http://stackoverflow.com/questions/1069666/sorting-javascript-object-by-property-value
-		var rowListSorted = [];
-		for (var row in rowList) {
-		    rowListSorted.push([row, rowList[row]]);
-		}
-
-		if (SortBy == "color") {
-			rowListSorted.sort(function(a, b) {
-				var aa = a[1];
-				var bb = b[1];
-				return aa.toLowerCase().localeCompare(bb.toLowerCase());
-			});
-		} else {
-			rowListSorted.sort(function(a, b) {return a[1] - b[1]});
-		}
-
-		//The sort need an array. We build back an object
-		var temp = new Object();
-		for (var i = 0; i < rowListSorted.length; ++i) {
-			var row = rowListSorted[i];
-		    temp[row[0]] = row[1];
-		}
-
-		//Create a temp table
-		$('body').append('<table class="hidden" id="tempTable"/>');
-
-		//Move everything to a new temp table
-		$.each(temp, function(id, value) {
-			if (Order == "DESC") {
-				$("#tempTable").prepend( $("#"+id) );
-			} else {
-				$("#tempTable").append( $("#"+id) );
-			}
-		});
-
-		//move the temp table content
-		$(TableSource).append( $("#tempTable > tbody > tr") );
-
-		//Remove the temps table
-		$("#tempTable").remove();
-	}*/
 
 	//This function Sort a LegoListElement
 	this.SortList = function(rowList, SortBy, Order) {
@@ -506,16 +340,6 @@ PBHelper.prototype.LDDUpload = function() {
 	 * LDDUpload main Functions
 	 */
 
-	//This function reset the variables
-	/*this.LDDUpload.resetVars = function() {
-		this.Parts = new Object;
-		this.numberBricks = 0;
-		this.numberElements = 0;
-		this.PartsValue = 0;
-
-		this.SetList = new Array;
-	}*/
-
 	//This function process the data received from the file and call the UI for display
 	this.LDDUpload.processLDDData = function(data, fileName) {
 
@@ -563,6 +387,7 @@ PBHelper.prototype.LDDUpload = function() {
 
 					//Show error to the user
 					//Set the text
+					//! TODO
 					//$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Error in AJAX request : Connexion timed out");
 
 					//Copy to the placeholder
@@ -577,6 +402,7 @@ PBHelper.prototype.LDDUpload = function() {
 					//$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Set " + data.REQUEST + " not found");
 
 					//Copy to the placeholder
+					//! TODO
 					//$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.SetPlaceholder));
 
 					//For debug purpose
@@ -1244,40 +1070,6 @@ PBHelper.prototype.BrickSearch = function() {
 		}
 	}
 
-	this.BrickSearch.addElement = function(element) {
-
-		var listID = $(element).parents(".listAdd").data('listid');
-		var elementID = $(element).parents("tr").data('LegoElement');
-		//var container = $(element).parents(".listAdd").data('container');
-
-		//Get the data
-		var elementData = $(element).parents('tr').data();
-
-		console.log('addElement', listID, elementID, elementData);
-
-
-		return;
-		//Keep this safe
-		var _this = this;
-
-		//Post to PHP so the part is added to the list
-		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : elementID}, function( reponse ) {
-
-			//!TODO: Ajouter feedback dans l'UI
-
-
-			//Add the element to the master list
-			//We do it here, otherwise it will appear in the list, but the state won't be saved
-			_this.addElementToList(listID, elementID, elementData);
-
-			//Reload the list if it's the current one
-			if (listID == _this.active) {
-				_this.refreshList();
-			}
-
-		});
-	}
-
 	/*
 	 * UI Functions
 	 */
@@ -1422,10 +1214,10 @@ PBHelper.prototype.List = function() {
 
 		//Check if all field have something in it
 		if (email.length == 0 || pass.length == 0) {
-		 $(this.UI.Main).find(this.UI.Login).find(".alert-danger").show();
-		 $(this.UI.Main).find(this.UI.Login).find(".alert-danger > span").html("Please fill in all the fields");
-		 $(this.UI.Main).find(this.UI.Login).find(".btn").removeAttr('disabled');
-		 return;
+			$(this.UI.Main).find(this.UI.Login).find(".alert-danger").show();
+			$(this.UI.Main).find(this.UI.Login).find(".alert-danger > span").html("Please fill in all the fields");
+			$(this.UI.Main).find(this.UI.Login).find(".btn").removeAttr('disabled');
+			return;
 		}
 
 		//We keep this secured
@@ -1812,10 +1604,12 @@ PBHelper.prototype.List = function() {
 					_this.parent.sendLEGODataToCache(data);
 
 					//Get the brick and put it a var for shortcut
-					//!TODO HERE
-					var brick = _this.lists[_this.active].getBrick(data.REQUEST);
+					var brick = _this.lists[_this.active].getBrickElement(data.REQUEST);
 
-					//!TODO HERE !!!!!!!
+					//Just to make sure... We don't want weird error in the next few lines
+					if (brick == null) {
+						console.log("Something went wrong. Part " + data.REQUEST + " has vanished!");
+					}
 
 					//Update the price from the list brick element
 					brick.data.setProperty("price", data.Bricks[0].Price);
@@ -1915,7 +1709,6 @@ PBHelper.prototype.List = function() {
 		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : brick.data.getProperty('ID')}, function( reponse ) {
 
 			//!TODO: Ajouter feedback dans l'UI
-			//console.log("ADDING TO LIST ID " + listID, brick.data.getProperty('ID'), brick.data);
 
 			//Add the element to the master list
 			//We do it here, otherwise it will appear in the list, but the state won't be saved
@@ -1924,6 +1717,55 @@ PBHelper.prototype.List = function() {
 			//Reload the list if it's the current one
 			if (listID == _this.active) {
 				_this.refreshList();
+			}
+		});
+	}
+
+	this.List.deleteElement = function(brick) {
+
+		//Keep this safe
+		var _this = this;
+
+		//Post to PHP so the part is delete from the list
+		$.post( this.parent.users_base_url + "?action=delElementfromList", {'listID' : this.active, 'elementID' : brick.data.getProperty('ID')}, function( reponse ) {
+			_this.lists[_this.active].delBrick(brick);
+			_this.refreshList();
+		});
+	}
+
+	this.List.deleteList = function() {
+
+		//Keep this safe
+		var _this = this;
+
+		//Ask the question
+		bootbox.confirm({
+			title: "Delete list?",
+			message: "Are you sure you want to delete the list '<strong>" + this.lists[this.active].getProperty('name')+"</strong>? Deleted lists cannot be recovered!",
+			buttons: {
+		        'cancel': {
+		            label: 'Cancel',
+		            className: 'btn-default pull-left'
+		        },
+		        'confirm': {
+		            label: 'Do it !',
+		            className: 'btn-danger pull-right'
+		        }
+		    },
+		    callback: function(result) {
+				if (result) {
+
+			  		//Going for php
+					$.post( _this.parent.users_base_url + "?action=deleteList", {'listID' : _this.active}, function( reponse ) {
+
+						//Go back to the list of lists
+						_this.UI_ShowLists();
+
+						//Same as creating list, we reload everything. Easier this way
+						_this.LoadUsers();
+					});
+
+			  	}
 			}
 		});
 	}
@@ -2171,7 +2013,16 @@ function LegoBrickList(initData) {
 		}
 	}
 
-	//! TODO : Delete brick
+	this.delBrick = function(lego_element) {
+		for (var i in bricks) {
+			if (bricks[i] == lego_element) {
+				delete bricks[i];
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	this.getBricks = function() {
 
@@ -2203,19 +2054,17 @@ function LegoBrickList(initData) {
 		return temp;
 	}
 
-	/*this.getBrickData = function(i) {
+	this.getBrickElement = function(ID) {
 
-		//Get the properties and put them in the return object
-		var obj = bricks[i].data.getProperties();
+		for (var i in bricks) {
+			if (this.getBrick(i).data.getProperty('ID') == ID) {
+				return this.getBrick(i);
+			}
+		}
 
-		//Adding the quantity to the return object
-		obj['qte'] = 		bricks[i].qte;
-		obj['value'] = 		getBrickValue(bricks[i].data, bricks[i].qte, false);
-		obj['valueStr'] = 	getBrickValue(bricks[i].data, bricks[i].qte, true);
-
-		//Done !
-		return obj;
-	}*/
+		//If we didn't find anything, null will be returned
+		return null;
+	}
 
 	this.getNbBricks = function() {
 
