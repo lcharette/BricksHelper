@@ -88,7 +88,9 @@ label > small {
 	padding-right: 10px;
 }
 
-.nav-app-list .listsPlaceholder p {
+.nav-app-list .listsPlaceholder p,
+.nav-app-list .listContentPlaceholder p,
+.nav-app-ldd #LDDUpload_file p {
 	margin: 0px;
 	color: black;
 	font-size: 85%;

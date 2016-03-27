@@ -6,7 +6,8 @@ function PBHelper (options) {
 	this.bricks_base_url = "getitemordesign.php?getitemordesign=";
 	this.users_base_url = "users.php";
 	this.cache_base_url = "cache.php";
-	this.defaultImage = "assets/img/defaultimg.gif";
+	this.defaultImage = "assets/img/defaultimg.png";
+	this.defaultSetImage = "assets/img/defaultset.png";
 	this.country = "";
 	this.LEGOBaseURL = "https://mi-od-live-s.legocdn.com";
 	this.AjaxTimeout = 15; //In seconds
@@ -129,6 +130,11 @@ function PBHelper (options) {
 
 			var tempErrorIcon = $("#LDDErrorIconTemplate").find(".LEGO_PartColorNotFound").clone();
 			$(template).find(".templateTable_row").find(".price").html(tempErrorIcon);
+
+			//We also aply the "bw-image" class to the image. This is the onlt place we have to do this
+			//because all other case we will have the real image or a placehodler.
+			//This is because here we will have an image, but not the right one.
+			$(template).find(".templateTable_row").find(".asset").find("img").addClass("bw-image");
 
 		//Case n°3 --> LEGO_PartNotFound :: Part description was not found.
 		} else if (brick.data.getProperty('price') == -3) {
@@ -569,8 +575,8 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function setup the file info pannel and show it.
 	this.LDDUpload.UI_setLDDPannel = function(fileName, nb_bricks, nb_elements, fileImage) {
 		$(this.UI.Main).find(this.UI.LDDPannel).find(".panel-heading").html(fileName);
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".setNbPieces").html(nb_bricks);
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".setNbUniqueElements").html(nb_elements);
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbPieces > span").html(nb_bricks);
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbElements > span").html(nb_elements);
 		$(this.UI.Main).find(this.UI.LDDPannel).find("img").attr('src', fileImage);
 		$(this.UI.Main).find(this.UI.LDDPannel).show();
 	}
@@ -578,9 +584,9 @@ PBHelper.prototype.LDDUpload = function() {
 	//This function reset the file info pannel and hide it.
 	this.LDDUpload.UI_resetLDDPannel = function() {
 		$(this.UI.Main).find(this.UI.LDDPannel).find(".panel-heading").html("");
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".setNbPieces").html(0);
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".setNbUniqueElements").html(0);
-		$(this.UI.Main).find(this.UI.LDDPannel).find("img").attr('src', this.parent.defaultImage);
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbPieces > span").html(0);
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbElements > span").html(0);
+		$(this.UI.Main).find(this.UI.LDDPannel).find("img").attr('src', this.parent.defaultSetImage);
 		$(this.UI.Main).find(this.UI.LDDPannel).hide();
 
 		//Also reset the buttons
@@ -860,7 +866,7 @@ PBHelper.prototype.SetSearch = function() {
 		$(this.UI.Main).find(this.UI.SetPannel).find(".panel-heading").html("");
 		$(this.UI.Main).find(this.UI.SetPannel).find(".setNbPieces").html(0);
 		$(this.UI.Main).find(this.UI.SetPannel).find(".setNbUniqueElements").html(0);
-		$(this.UI.Main).find(this.UI.SetPannel).find("img").attr('src', this.parent.defaultImage);
+		$(this.UI.Main).find(this.UI.SetPannel).find("img").attr('src', this.parent.defaultSetImage);
 	}
 
 	//This function disabled all button.
@@ -1358,7 +1364,7 @@ PBHelper.prototype.List = function() {
 				"ID": list.ID,
 				"name": list.listName,
 				"createdOn": list.createdOn,
-				"image" : _this.parent.defaultImage
+				"image" : _this.parent.defaultSetImage
 			});
 
 			//Add all bricks to the list
@@ -1510,8 +1516,9 @@ PBHelper.prototype.List = function() {
 
 		//Setup everything
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".panel-heading").html( this.lists[this.active].getProperty('name') );
-		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".setNbPieces").html( this.lists[this.active].getNbBricks() );
-		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".setNbUniqueElements").html( this.lists[this.active].getNbElements() );
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".nbPieces > span").html( this.lists[this.active].getNbBricks() );
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".nbElements > span").html( this.lists[this.active].getNbElements() );
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find(".createdOn > span").html( moment( this.lists[this.active].getProperty('createdOn') * 1000 ).format('LLL') );
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).find("img").attr('src', this.lists[this.active].getProperty('image') );
 
 		//Show the previous button and hide the create list
@@ -2005,7 +2012,6 @@ function LegoBrickList(initData) {
 
 			//Add the brick to the list
 			bricks[i] = new Object();
-			//1bricks[i].ID = i;
 			bricks[i].qte = qte;
 			bricks[i].data = lego_element;
 

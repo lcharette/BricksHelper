@@ -25,15 +25,29 @@
 	<div class="panel-body">
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-2"><img class="pull-left setImg" src="" alt="Set image"></div>
+				<div class="col-md-2" style="text-align: center"><img class="pull-left setImg" src="" alt="Set image"></div>
 				<div class="col-md-10">
-					<p>Total number of bricks found: <span class="setNbPieces"></span></p>
-					<p>Number of unique element found: <span class="setNbUniqueElements"></span></p>
+					<p class="nbPieces">Number of pieces: <span></span></p>
+					<p class="nbElements">Number of unique elements: <span></span></p>
 				</div>
 			</div>
 		</div>
 
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
+
+		<!-- Split button -->
+		<div class="btn-group">
+		  <button type="button" class="btn btn-success" onclick="App.LDDUpload.Save();"><i class="fa fa-floppy-o"></i> Save to new list</button>
+		  <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		    <span class="caret"></span>
+		    <span class="sr-only">Toggle Dropdown</span>
+		  </button>
+		  <ul class="dropdown-menu">
+
+		    <li role="separator" class="divider"></li>
+		    <li><a href="#">Create new list</a></li>
+		  </ul>
+		</div>
 
 		<!-- Sort button -->
 		<div class="btn-group pull-right">

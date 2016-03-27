@@ -39,13 +39,15 @@
 		<div class="panel-body">
 			<div class="container-fluid">
 				<div class="row">
-					<div class="col-md-2"><img class="pull-left setImg" src="" alt="Set image"></div>
+					<div class="col-md-2" style="text-align: center;"><img class="setImg" src="" alt="Set image"></div>
 					<div class="col-md-10">
-						<p>Total number of bricks found: <span class="setNbPieces"></span></p>
-						<p>Number of unique element found: <span class="setNbUniqueElements"></span></p>
+						<p class="createdOn">Created on: <span></span></p>
+						<p class="nbPieces">Number of pieces: <span></span></p>
+						<p class="nbElements">Number of unique elements: <span></span></p>
 					</div>
 				</div>
 			</div>
+			<hr />
 			<button class="btn btn-danger btn-deleteLDD" onclick="App.List.deleteList();"><i class="fa fa-trash-o"></i> Delete list</button>
 			<button class="btn btn-primary btn-analyseLDD" onclick="App.List.Analyse();"><i class="fa fa-search"></i> Find value</button>
 			<!-- Sort button -->
@@ -157,7 +159,7 @@
 			<div class="panel-body">
 				<table>
 					<tr>
-						<td nowrap="nowrap" style="padding-right: 5px;"><!-- <img class="media-object" src="" alt=""> --></td>
+						<td nowrap="nowrap" style="padding-right: 5px;"><img class="media-object" src="" alt=""></td>
 						<td width="100%">
 							<p class="createdOn">Created on: <span></span></p>
 							<p class="nbPieces">Number of pieces: <span></span></p>
