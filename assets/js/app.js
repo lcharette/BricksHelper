@@ -500,12 +500,7 @@ PBHelper.prototype.LDDUpload = function() {
 			    if (currentPart >= _this.numberElements) {
 
 				    //Set the UI
-					_this.UI_setLDDPannel(
-						_this.Parts.getProperty('fileName'),
-						_this.Parts.getNbBricks(),
-						_this.Parts.getNbElements(),
-						_this.Parts.getProperty('asset')
-					);
+					_this.UI_setLDDPannel();
 
 					//Stop the progress
 				    _this.UI_Progress_done();
@@ -541,6 +536,12 @@ PBHelper.prototype.LDDUpload = function() {
 			);
 		}
 
+		//We set the value in the template
+		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").find(".txtTotal").html( this.Parts.getValue(true) );
+
+		//We copy it to the pannel
+		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.LDDPannel + " > table > tfoot"));
+
 		//We show the table
 		this.UI_showPartsTable();
 	}
@@ -557,16 +558,6 @@ PBHelper.prototype.LDDUpload = function() {
 		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
 		console.log(reponse);
 	}*/
-
-	//This function add the total row to the table
-	this.LDDUpload.Analyse_addTotalRow = function() {
-
-		//We set the value in the template
-		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").find(".txtTotal").html(this.parent.roundPrice(this.PartsValue)+" $");
-
-		//We copy it to the pannel
-		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.LDDPannel + " > table > tfoot"));
-	}
 
 	//This function is called by the UI to change the order of the list.
 	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
@@ -585,11 +576,11 @@ PBHelper.prototype.LDDUpload = function() {
 	 */
 
 	//This function setup the file info pannel and show it.
-	this.LDDUpload.UI_setLDDPannel = function(fileName, nb_bricks, nb_elements, fileImage) {
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".panel-heading").html(fileName);
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbPieces > span").html(nb_bricks);
-		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbElements > span").html(nb_elements);
-		$(this.UI.Main).find(this.UI.LDDPannel).find("img").attr('src', fileImage);
+	this.LDDUpload.UI_setLDDPannel = function() {
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".panel-heading").html( this.Parts.getProperty('fileName') );
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbPieces > span").html( this.Parts.getNbBricks() );
+		$(this.UI.Main).find(this.UI.LDDPannel).find(".nbElements > span").html( this.Parts.getNbElements() );
+		$(this.UI.Main).find(this.UI.LDDPannel).find("img").attr('src', this.Parts.getProperty('asset') );
 		$(this.UI.Main).find(this.UI.LDDPannel).show();
 	}
 
