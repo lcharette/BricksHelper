@@ -382,9 +382,6 @@ PBHelper.prototype.LDDUpload = function() {
 		//Variable to keep progress of the current number of part processed
 		var currentPart = 0;
 
-		//Reset the parts total value, otherwise it keep incresing with multiple pass
-		this.PartsValue = 0;
-
 		//We are going into .each. We need to make "this" safe
 		var _this = this;
 
