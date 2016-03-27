@@ -1,4 +1,3 @@
-
 function PBHelper (options) {
 
     this.options = options;
@@ -224,6 +223,9 @@ function PBHelper (options) {
 		//Update all the select on the page
 		$('.coutrySelect').removeAttr('selected');
 		$('.coutrySelect option[value='+country+']').attr('selected','selected');
+
+		//Set the cookie
+		this.cookieHelper.set("PBH_countryCode", country, 24*7);
 	}
 
 	this.updateAddButton = function(element) {
@@ -308,9 +310,19 @@ function PBHelper (options) {
 	this.BrickSearch();
 	this.List();
 	this.Navigation();
+	this.cookieHelper();
 
-	//Setup default country
-	this.setCountry("CA");
+	//Check the cookie to find the country
+	if ((PBH_countryCode = this.cookieHelper.get("PBH_countryCode")) != "") {
+
+		//Setup the cookied country code
+		this.setCountry(PBH_countryCode);
+
+	} else {
+
+		//Setup default country
+		this.setCountry("CA");
+	}
 }
 
 
@@ -369,6 +381,9 @@ PBHelper.prototype.LDDUpload = function() {
 
 		//Variable to keep progress of the current number of part processed
 		var currentPart = 0;
+
+		//Reset the parts total value, otherwise it keep incresing with multiple pass
+		this.PartsValue = 0;
 
 		//We are going into .each. We need to make "this" safe
 		var _this = this;
@@ -2361,4 +2376,30 @@ function LegoElement(initData) {
 	 }
 
 	 return true;
+
+}
+
+/*
+ //! ------------- Cookie Helper -------------
+ */
+PBHelper.prototype.cookieHelper = function() {
+
+    this.cookieHelper.get = function(a) {
+        for (var b = a + "=", c = document.cookie.split(";"), d = 0; d < c.length; d++) {
+            for (var e = c[d];
+                " " == e.charAt(0);) e = e.substring(1);
+            if (0 === e.indexOf(b)) return e.substring(b.length, e.length)
+        }
+        return ""
+    }
+
+    this.cookieHelper.set = function(a, b, c) {
+	    //NB.: 	a = name
+	    //		b = value
+	    //		c = Temp (en heures)
+        var d = new Date;
+        d.setTime(d.getTime() + 3600 * c * 1e3);
+        var e = "expires=" + d.toUTCString();
+        document.cookie = a + "=" + b + "; " + e + ";path=/"
+    }
 }

@@ -4,6 +4,14 @@ title: Changelog
 permalink: /changelog/
 ---
 
+### March 16th 2016
+* (LDD Upload) Fix wrong total if the value is calculated twice in a row (or more) for the same model / uploaded file.
+
+### March 14th 2016
+* Fix country not working for set search
+* Added cookie to remember your country
+* Fix crash with empty result from LEGO website
+
 ### March 6th 2016
 * Fix detection of bricks composed of multiple parts
 * Improved sorting
