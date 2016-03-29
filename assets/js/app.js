@@ -1447,55 +1447,36 @@ PBHelper.prototype.List = function() {
 
 	}
 
-	//This function take care of creating a new list
-	this.List.CreateList = function(formElement) {
+	this.List.CreateList = function() {
 
-		//Ask for the list name
-		var listName = $(formElement).find('[name="listName"]').val();
+		//Preserve this
+		var _this = this;
 
-		//Check to see if line is empty
-		if (listName == "") {
+		//Call Bootbox Prompt
+		bootbox.prompt("Please enter your new list name", function(result) {
+		  if (result != null && result != "") {
 
-			//Use alert. I'm lazy
-			alert("List name can't be blank !");
+				//Send to PHP!
+				$.post( _this.parent.users_base_url + "?action=createList", {'listName' : result}, function( reponse ) {
 
-		} else {
+					//Convert JSON
+					var reponse = $.parseJSON(reponse);
 
-			//Preserve this
-			var _this = this;
+					//Process reponse
+					if (reponse.success) {
 
-			//Desactivate buttons before sending to PHP
-			$(formElement).find(".btn").attr('disabled', 'disabled');
+						//Reload the list
+						_this.LoadUsers();
 
-			//Send to PHP!
-			$.post( this.parent.users_base_url + "?action=createList", {'listName' : listName}, function( reponse ) {
+					} else {
 
-				//Convert JSON
-				var reponse = $.parseJSON(reponse);
+						//Display the error in an alert
+						bootbox.alert("An error occured : " + reponse.msg);
+					}
+				});
+		  }
+		});
 
-				//Enable the buttons
-				$(formElement).find(".btn").removeAttr('disabled');
-
-				//Process reponse
-				if (reponse.success) {
-
-					//Empty the form
-					$(formElement).find('[name="listName"]').val("");
-
-					//Reset the forum
-					_this.UI_hideCreateList();
-
-					//Reload the list
-					_this.LoadUsers();
-
-				} else {
-
-					//Again, lazy. Using alert for the error.
-					//console.log("ERROR", reponse);
-					alert("An error occured : " + reponse.msg);
-				}
-			});
-		}
 	}
 
 	//This function is called when a list is selected. It define the current list and display it
@@ -1837,28 +1818,6 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).show();			//Show the list
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listCreateForm).show(); //Show the create list
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listPrevious).hide();	//Hide the previous button
-	}
-
-	//This function show the "Create list" form
-	this.List.UI_showCreateList = function() {
-
-		//Hide the button
-		$(this.UI.Main).find(this.UI.Mainlist).find(".btn-showCreate").hide();
-
-		//Show the form
-		$(this.UI.Main).find(this.UI.Mainlist).find("#listCreateForm").show();
-
-	}
-
-	//This function hide the "Create list" form
-	this.List.UI_hideCreateList = function() {
-
-		//Hide the button
-		$(this.UI.Main).find(this.UI.Mainlist).find(".btn-showCreate").show();
-
-		//Show the form
-		$(this.UI.Main).find(this.UI.Mainlist).find("#listCreateForm").hide();
-
 	}
 
 	//This function reset the parts table

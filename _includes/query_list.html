@@ -21,14 +21,7 @@
 	</div>
 
 	<div class="pull-right listCreateForm">
-		<button class="btn btn-success btn-showCreate" onclick="App.List.UI_showCreateList()"><i class="fa fa-plus"></i> Create new list</button>
-		<form action="javascript:void(0);" onsubmit="App.List.CreateList(this)" id="listCreateForm" style="display: none;" class="form-inline">
-			<div class="form-group">
-				<input type="text" class="form-control" placeholder="List name" name="listName" value="" />
-			</div>
-			<a href="javascript:void(0);" class="btn btn-default" onclick="App.List.UI_hideCreateList(this)">Cancel</a>
-			<input type="submit" class="btn btn-success" value="Create list">
-		</form>
+		<button class="btn btn-success" onclick="App.List.CreateList()"><i class="fa fa-plus"></i> Create new list</button>
 	</div>
 	<br clear="all" /><br />
 
