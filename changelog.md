@@ -5,7 +5,7 @@ permalink: /changelog/
 ---
 
 ### March 27th 2016
-* Fix color match (once and for all)
+* Fix color associations
 
 ### March 16th 2016
 * (LDD Upload) Fix wrong total if the value is calculated twice in a row (or more) for the same model / uploaded file.
