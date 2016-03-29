@@ -13,19 +13,19 @@ function PBHelper (options) {
 
 	//SETUP 1° : We validate some options params
 	if (this.options.LLDUpload_interface == "") {
-		console.log("PBHELPER ERROR", "Non optinal option missing", "LLDUpload_interface");
+		console.warn("PBHELPER ERROR", "Non optinal option missing", "LLDUpload_interface");
 		return;
 	}
 	if (this.options.SetSearch_interface == "") {
-		console.log("PBHELPER ERROR", "Non optinal option missing", "SetSearch_interface");
+		console.warn("PBHELPER ERROR", "Non optinal option missing", "SetSearch_interface");
 		return;
 	}
 	if (this.options.BrickSearch_interface == "") {
-		console.log("PBHELPER ERROR", "Non optinal option missing", "BrickSearch_interface");
+		console.warn("PBHELPER ERROR", "Non optinal option missing", "BrickSearch_interface");
 		return;
 	}
 	if (this.options.List_interface == "") {
-		console.log("PBHELPER ERROR", "Non optinal option missing", "List_interface");
+		console.warn("PBHELPER ERROR", "Non optinal option missing", "List_interface");
 		return;
 	}
 
@@ -532,7 +532,7 @@ PBHelper.prototype.LDDUpload = function() {
 			this.parent.AddElementToTable(
 				$(this.UI.Main).find(this.UI.LDDPannel + " > table > tbody"),	// Destination
 				$(this.UI.Main).find(this.UI.PartsTableSource), 				// Source
-				this.Parts.getBrick(sortedList[i])											// Brick
+				this.Parts.getBrick(sortedList[i])								// Brick
 			);
 		}
 
@@ -546,18 +546,27 @@ PBHelper.prototype.LDDUpload = function() {
 		this.UI_showPartsTable();
 	}
 
-	/*this.LDDUpload.testString = function() {
-		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
-		$.each(this.SetList, function(i,brick) {
-			if (brick.SQty >= brick.nbReq) {
-				for (i = 0; i < brick.nbReq; i++) {
-					reponse = reponse + 'a.addToBasket(' + JSON.stringify(brick) + ', b);';
-				}
-			}
+	this.LDDUpload.Save = function() {
+
+		//!TODO: Disable button and/or spinner it !
+
+		//Keep this safe
+		var _this = this;
+
+		//STEP N° 1 : Create a list
+		this.parent.List.CreateList( this.Parts.getProperty("fileName"), this.Parts.getProperty("asset"), function (newListID) {
+
+			//STEP N° 2 : Add the bricks to the new list
+			_this.parent.List.addElements(newListID, _this.Parts, function() {
+
+				//Reload user
+				_this.parent.List.LoadUsers();
+
+				//Go to lists
+				_this.parent.Navigation.Go(".nav-app-list");
+			});
 		});
-		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
-		console.log(reponse);
-	}*/
+	}
 
 	//This function is called by the UI to change the order of the list.
 	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
@@ -1349,6 +1358,7 @@ PBHelper.prototype.List = function() {
 				_this.UI_ShowLogin();
 
 			} else {
+				//!TODO: Bootbox
 				console.log("ERROR", reponse);
 			}
 		});
@@ -1367,7 +1377,7 @@ PBHelper.prototype.List = function() {
 				"ID": list.ID,
 				"name": list.listName,
 				"createdOn": list.createdOn,
-				"image" : _this.parent.defaultSetImage
+				"image" : (list.asset != "") ? list.asset : _this.parent.defaultSetImage,
 			});
 
 			//Add all bricks to the list
@@ -1447,7 +1457,7 @@ PBHelper.prototype.List = function() {
 
 	}
 
-	this.List.CreateList = function() {
+	this.List.getNewListName = function() {
 
 		//Preserve this
 		var _this = this;
@@ -1455,28 +1465,48 @@ PBHelper.prototype.List = function() {
 		//Call Bootbox Prompt
 		bootbox.prompt("Please enter your new list name", function(result) {
 		  if (result != null && result != "") {
+		  	_this.CreateList(result, null, function(newListID) {
 
-				//Send to PHP!
-				$.post( _this.parent.users_base_url + "?action=createList", {'listName' : result}, function( reponse ) {
-
-					//Convert JSON
-					var reponse = $.parseJSON(reponse);
-
-					//Process reponse
-					if (reponse.success) {
-
-						//Reload the list
-						_this.LoadUsers();
-
-					} else {
-
-						//Display the error in an alert
-						bootbox.alert("An error occured : " + reponse.msg);
-					}
-				});
+			  	//Reload the list
+				_this.LoadUsers();
+		  	});
 		  }
 		});
+	}
 
+	this.List.CreateList = function(listName, listAsset, callback) {
+
+		//Preserve this
+		var _this = this;
+
+		//List Name is necesery
+		if (listName == null || listName == false || listName == "") {
+			console.warn("List - CreateList : List name can't be empty");
+			return;
+		}
+
+		//But listAsset is not!
+		if (listAsset == null || listAsset == false) {
+			listAsset = "";
+		}
+
+		//Send to PHP!
+		$.post( _this.parent.users_base_url + "?action=createList", {'listName' : listName, 'listAsset': listAsset}, function( reponse ) {
+
+			//Convert JSON
+			var reponse = $.parseJSON(reponse);
+
+			//Process reponse
+			if (reponse.success) {
+
+				callback(reponse.newListID);
+
+			} else {
+
+				//Display the error in an alert
+				bootbox.alert("An error occured : " + reponse.msg);
+			}
+		});
 	}
 
 	//This function is called when a list is selected. It define the current list and display it
@@ -1603,7 +1633,7 @@ PBHelper.prototype.List = function() {
 
 					//Just to make sure... We don't want weird error in the next few lines
 					if (brick == null) {
-						console.log("Something went wrong. Part " + data.REQUEST + " has vanished!");
+						console.warn("Something went wrong. Part " + data.REQUEST + " has vanished!");
 					}
 
 					//Update the price from the list brick element
@@ -1713,6 +1743,29 @@ PBHelper.prototype.List = function() {
 			if (listID == _this.active) {
 				_this.refreshList();
 			}
+		});
+	}
+
+	this.List.addElements = function(listID, LegoList, callback) {
+
+		//Keep this safe
+		var _this = this;
+
+		//!TODO: Make sure you are connected
+
+		//Go trough the list and build something we can send to PHP
+		var query = new Array;
+
+		for (var i in LegoList.getBricks()) {
+			query.push({
+				elementID: LegoList.getBrick(i).data.getProperty("ID"),
+				qte: LegoList.getBrick(i).qte
+			});
+		}
+
+		//Post to PHP so the part is added to the list
+		$.post( this.parent.users_base_url + "?action=addElementArrayToList", {'listID' : listID, 'data' : JSON.stringify(query) }, function( reponse ) {
+			callback();
 		});
 	}
 
@@ -2350,3 +2403,16 @@ PBHelper.prototype.cookieHelper = function() {
         document.cookie = a + "=" + b + "; " + e + ";path=/"
     }
 }
+
+	/*this.LDDUpload.testString = function() {
+		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
+		$.each(this.SetList, function(i,brick) {
+			if (brick.SQty >= brick.nbReq) {
+				for (i = 0; i < brick.nbReq; i++) {
+					reponse = reponse + 'a.addToBasket(' + JSON.stringify(brick) + ', b);';
+				}
+			}
+		});
+		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
+		console.log(reponse);
+	}*/

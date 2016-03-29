@@ -176,6 +176,7 @@ $session = new session();
 
 			//Get the list name
 			$listName = request_var('listName', '');
+			$listAsset = request_var('listAsset', '');
 
 			//Check for empty name
 			if ($listName == "") {
@@ -186,15 +187,17 @@ $session = new session();
 			}
 
 			//Ok, on ajoute dans MySQL
-			$MySQL->insert("userlists", array(
+			$ID = $MySQL->insert("userlists", array(
 				"user_id" 		=> $session->user['data']['user_id'],
 				"listName"		=> addslashes($listName),
 				"createdOn"		=> time(),
+				"asset"			=> $listAsset
 			));
 
 			//Retourne un succès
 			returnPage(array(
 				'success' 	=> true,
+				'newListID' => $ID
 			));
 
 		break;
@@ -281,6 +284,68 @@ $session = new session();
 
 			} else {
 				$MySQL->update("listElements", array('qte' => ($result_element['qte'] + 1)), array('ID' => $result_element['ID']));
+			}
+
+			returnPage(array(
+				'success' 	=> true,
+			));
+
+		break;
+
+		//! ADD ELEMENT ARRAY TO LIST
+		case 'addElementArrayToList':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'msg' => "Not logged in",
+				));
+			}
+
+			//Get the list ID
+			$listID = request_var('listID', 0);
+			$data = request_var('data', "");
+
+			//Check for empty values
+			if ($listID == 0 || $data == "") {
+				returnPage(array(
+					'errorCode' => 402,
+					'msg' => "Missing param",
+				));
+			}
+
+			//Decode JSON
+			$data = json_decode($data, true);
+
+			//Get infos from the list
+			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			if (empty($result)) {
+				returnPage(array(
+					'errorCode' => 410,
+					'msg' => "List not owned",
+				));
+			}
+
+			//!TODO : Changer pour le même fonction que le cache
+			//Same thing with the part to see if we need an insert or update
+			foreach($data as $i => $brick) {
+
+				$result_element = $MySQL->select_one("listElements", "ID, qte", array("elementID" => $brick['elementID'], "AND listID" => $listID));
+
+				//Insert or update
+				if (empty($result_element)) {
+
+					$MySQL->insert("listElements", array(
+						"listID"	=> $listID,
+						"elementID"	=> $brick['elementID'],
+						"qte" 		=> $brick['qte']
+					));
+
+				} else {
+					$MySQL->update("listElements", array('qte' => ($result_element['qte'] + $brick['qte'])), array('ID' => $result_element['ID']));
+				}
 			}
 
 			returnPage(array(
