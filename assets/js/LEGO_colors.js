@@ -493,6 +493,10 @@ var LEGO_Color = {
     LegoID: "Aqua",
     Name: "Aqua"
   },
+  324: {
+    LegoID: "MEDIUM LAVENDEL",
+    Name: "Medium Lavender"
+  },
   326: {
     LegoID: "SPR. YELL. GREE",
     Name: "Yellowish Green"
