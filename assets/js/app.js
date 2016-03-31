@@ -98,7 +98,7 @@ function PBHelper (options) {
 		}
 
 		//On s'occupe des infos générales
-		$(template).find(".templateTable_row").find(".qte").html( brick.qte);
+		$(template).find(".templateTable_row").find(".qte > span").html( brick.qte);
 		$(template).find(".templateTable_row").find(".asset").find("img").attr('src', brick.data.getProperty('asset') );
 		$(template).find(".templateTable_row").find(".desc").html( brick.data.getProperty('itemDesc') );
 		$(template).find(".templateTable_row").find(".color").html( brick.data.getProperty('colorName') );
@@ -194,6 +194,31 @@ function PBHelper (options) {
 				  		_this.List.deleteElement(brick);
 				  	}
 				}
+			});
+		});
+
+		//Setup the qte button
+		$(t).find(".qte > div.btn").click(function() {
+			bootbox.dialog({
+			  message:	"<center><button class='btn btn-success btn-xs' onclick='qteMinus(this);' ><i class='fa fa-minus'></i></button>&nbsp;" +
+			  			"<input type='number' value='"+brick.qte+"'></input>" +
+			  			"&nbsp;<button class='btn btn-success btn-xs' onclick='qtePlus(this);'><i class='fa fa-plus'></i></button></center>",
+			  title: "Edit quantity",
+			  buttons: {
+			    success: {
+			      label: "Go",
+			      className: "btn-primary",
+			      callback: function() {
+
+			        _this.List.editElementQte(brick, $(this).find('input').val());
+
+			      }
+			    },
+			    main: {
+			      label: "Cancel",
+			      className: "btn-default pull-left"
+			    }
+			  }
 			});
 		});
 
@@ -436,6 +461,10 @@ PBHelper.prototype.LDDUpload = function() {
 							'price': -3, //Error code
 						});
 
+						//Add some info about this error
+						//This list does contain errors...
+						_this.Parts.setProperty('listError', true);
+
 						//set the brick color
 						b.setColor(colorCode);
 
@@ -482,6 +511,10 @@ PBHelper.prototype.LDDUpload = function() {
 								'itemDesc': data.Bricks[0].ItemDescr,
 								'price': -2,
 							});
+
+							//Add some info about this error
+							//This list does contain errors...
+							_this.Parts.setProperty('listError', true);
 
 							//set the brick color
 							b.setColor(colorCode);
@@ -548,22 +581,45 @@ PBHelper.prototype.LDDUpload = function() {
 
 	this.LDDUpload.Save = function() {
 
-		//!TODO: Disable button and/or spinner it !
-
 		//Keep this safe
 		var _this = this;
 
+		//If the list does contain error, we show a small warning
+		if (this.Parts.getProperty('listError')) {
+
+			bootbox.alert('<i class="fa fa-exclamation-triangle"></i> Take note: Brick without an element ID will be ignored.', function() {
+				doSave(_this);
+			});
+
+		} else {
+
+			doSave(_this);
+		}
+	}
+
+	//Private function to actually do the saving part
+	function doSave(_this) {
+
+		//spinner it !
+		$("#LDDUpload_modalSpinner").modal('show');
+
 		//STEP N° 1 : Create a list
-		this.parent.List.CreateList( this.Parts.getProperty("fileName"), this.Parts.getProperty("asset"), function (newListID) {
+		_this.parent.List.CreateList( _this.Parts.getProperty("fileName"), _this.Parts.getProperty("asset"), function (newListID) {
 
 			//STEP N° 2 : Add the bricks to the new list
 			_this.parent.List.addElements(newListID, _this.Parts, function() {
 
+				//Hide the spinner
+				$("#LDDUpload_modalSpinner").modal('hide');
+
 				//Reload user
-				_this.parent.List.LoadUsers();
+				_this.parent.List.setupMainList();
 
 				//Go to lists
 				_this.parent.Navigation.Go(".nav-app-list");
+
+				//And show the list of lists
+				_this.parent.List.UI_ShowLists();
 			});
 		});
 	}
@@ -1350,8 +1406,12 @@ PBHelper.prototype.List = function() {
 				//Parse the PHP Data. This will send th lists to the cache in 'this'
 				_this.parsePhpData(reponse.data.userlists);
 
+				//Display the username
+				//Setup the pannel header
+				$(_this.UI.Main).find(_this.UI.Mainlist).find("h3 span").html(reponse.data.userdata.username);
+
 				//Setup the main list of lists. The lists are already in 'this'
-				_this.setupMainList(reponse.data.userdata);
+				_this.setupMainList();
 
 			} else if (!reponse.success && reponse.errorCode == 406) {
 
@@ -1416,10 +1476,7 @@ PBHelper.prototype.List = function() {
 	}
 
 	//This function takes care of analysing the lists and displaying the list of the lists
-	this.List.setupMainList = function(userdata) {
-
-		//Setup the pannel header
-		$(this.UI.Main).find(this.UI.Mainlist).find("h3 span").html(userdata.username);
+	this.List.setupMainList = function() {
 
 		//Preserve this
 		var _this = this;
@@ -1468,7 +1525,7 @@ PBHelper.prototype.List = function() {
 		  	_this.CreateList(result, null, function(newListID) {
 
 			  	//Reload the list
-				_this.LoadUsers();
+				_this.setupMainList();
 		  	});
 		  }
 		});
@@ -1499,6 +1556,15 @@ PBHelper.prototype.List = function() {
 			//Process reponse
 			if (reponse.success) {
 
+				//Add the list to the lists
+				_this.lists[reponse.newListID] = new LegoBrickList({
+					"ID": reponse.newListID,
+					"name": listName,
+					"createdOn": reponse.createdOn,
+					"image" : (listAsset != "") ? listAsset : _this.parent.defaultSetImage,
+				});
+
+				//Do the callback !
 				callback(reponse.newListID);
 
 			} else {
@@ -1730,6 +1796,12 @@ PBHelper.prototype.List = function() {
 		//Keep this safe
 		var _this = this;
 
+		//Make sure we have an ID
+		if (brick.data.getProperty("ID") <= 0) {
+			console.warn("List - addElement : Can't add brick to list if it doesn't have an element ID! ("+brick.data.getProperty("ID")+")");
+			return;
+		}
+
 		//Post to PHP so the part is added to the list
 		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : brick.data.getProperty('ID')}, function( reponse ) {
 
@@ -1755,12 +1827,21 @@ PBHelper.prototype.List = function() {
 
 		//Go trough the list and build something we can send to PHP
 		var query = new Array;
-
 		for (var i in LegoList.getBricks()) {
-			query.push({
-				elementID: LegoList.getBrick(i).data.getProperty("ID"),
-				qte: LegoList.getBrick(i).qte
-			});
+
+			//We don't want to send brick which we don't have an ID
+			if (LegoList.getBrick(i).data.getProperty("ID") > 0) {
+
+				//Add the element to the master list
+				//We should do it after PHP to avoid a the case where a brick will appear in the list, but the state isn't saved
+				_this.lists[listID].addBrick(LegoList.getBrick(i).data, LegoList.getBrick(i).qte);
+
+				//Add to the array that will be sent to PHP
+				query.push({
+					elementID: LegoList.getBrick(i).data.getProperty("ID"),
+					qte: LegoList.getBrick(i).qte
+				});
+			}
 		}
 
 		//Post to PHP so the part is added to the list
@@ -1779,6 +1860,14 @@ PBHelper.prototype.List = function() {
 			_this.lists[_this.active].delBrick(brick);
 			_this.refreshList();
 		});
+	}
+
+	this.List.editElementQte = function(brick, qte) {
+
+		//!TODO: Do the PHP Thing
+
+		this.lists[this.active].setBrickQte(brick.data, qte);
+		this.refreshList();
 	}
 
 	this.List.deleteList = function() {
@@ -1806,11 +1895,17 @@ PBHelper.prototype.List = function() {
 			  		//Going for php
 					$.post( _this.parent.users_base_url + "?action=deleteList", {'listID' : _this.active}, function( reponse ) {
 
+						//Delete the list in the
+						delete _this.lists[_this.active];
+
+						//Set active list to null
+						_this.active = 0;
+
 						//Go back to the list of lists
 						_this.UI_ShowLists();
 
 						//Same as creating list, we reload everything. Easier this way
-						_this.LoadUsers();
+						_this.setupMainList();
 					});
 
 			  	}
@@ -2016,14 +2111,17 @@ function LegoBrickList(initData) {
 		}
 
 		//Small shortcut fot the brick ID
-		//var i = lego_element.getProperty("ID");
-		var i = this.getNbElements() + 1;
+		var position = this.getBrickElementPosition(lego_element.getProperty("ID"));
+
 
 		//if quantity is undefined, we set it to 1
 		if (qte == undefined) { qte = 1; }
 
 		//Check if this brick already exist in the list
-		if ( bricks[i] == undefined ) {
+		if ( bricks[position] == undefined ) {
+
+			//Get the next ID
+			var i = this.getNbElements() + 1;
 
 			//Add the brick to the list
 			bricks[i] = new Object();
@@ -2034,7 +2132,33 @@ function LegoBrickList(initData) {
 		} else {
 
 			//...increment the qte
-			bricks[i].qte = bricks[i].qte + qte;
+			bricks[position].qte = bricks[position].qte + qte;
+		}
+	}
+
+	this.setBrickQte = function(lego_element, qte) {
+
+		//The specified brick needs to be a Lego Element object
+		if (!(lego_element instanceof LegoElement)) {
+			throw new Error("Specified brick is not a valid Lego element");
+		}
+
+		//Small shortcut fot the brick ID
+		var position = this.getBrickElementPosition(lego_element.getProperty("ID"));
+
+		//if quantity is undefined, we set it to 1
+		if (qte == undefined) { return false; }
+
+		//Check if this brick already exist in the list
+		if ( bricks[position] == undefined ) {
+
+			return false;
+
+		//It does exist...
+		} else {
+
+			//...increment the qte
+			bricks[position].qte = qte;
 		}
 	}
 
@@ -2081,9 +2205,22 @@ function LegoBrickList(initData) {
 
 	this.getBrickElement = function(ID) {
 
+		var i = this.getBrickElementPosition(ID);
+		if (i == null) {
+			return null;
+		} else {
+			return this.getBrick(i);
+		}
+
+		//If we didn't find anything, null will be returned
+		return null;
+	}
+
+	this.getBrickElementPosition = function(ID) {
+
 		for (var i in bricks) {
 			if (this.getBrick(i).data.getProperty('ID') == ID) {
-				return this.getBrick(i);
+				return i;
 			}
 		}
 
@@ -2403,6 +2540,14 @@ PBHelper.prototype.cookieHelper = function() {
         document.cookie = a + "=" + b + "; " + e + ";path=/"
     }
 }
+
+function qtePlus(element) {
+	$(element).parent().find('input').val( parseInt($(element).parent().find('input').val()) + 1 );
+}
+function qteMinus(element) {
+	$(element).parent().find('input').val( parseInt($(element).parent().find('input').val()) - 1 );
+}
+
 
 	/*this.LDDUpload.testString = function() {
 		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';

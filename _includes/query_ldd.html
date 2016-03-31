@@ -32,7 +32,7 @@
 				</div>
 			</div>
 		</div>
-
+		<hr />
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
 
 		<!-- Split button -->
@@ -93,6 +93,14 @@
 	</table>
 </div>
 
+<div class="modal fade" id="LDDUpload_modalSpinner" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content" style="text-align: center">
+		<div class="modal-body"><h2 class="totalFit">Saving <i class="fa fa-spinner fa-spin"></i></h2></div>
+    </div>
+  </div>
+</div>
+
 <div class="hidden">
 	<table id="LDDtemplateTable">
 		<tr class="templateTable_row">
@@ -104,7 +112,7 @@
 				Color: <span class="color"></span><br />
 				{% include listAddButton.html %}
 			</td>
-			<td class="qte v-align-middle" align="center"></td>
+			<td class="qte v-align-middle" align="center"><span></span></td>
 			<td class="price v-align-middle" align="center"></td>
 			<td class="priceTotal v-align-middle" align="center"></td>
 		</tr>

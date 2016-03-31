@@ -197,7 +197,8 @@ $session = new session();
 			//Retourne un succès
 			returnPage(array(
 				'success' 	=> true,
-				'newListID' => $ID
+				'newListID' => $ID,
+				'createdOn' => time()
 			));
 
 		break;
