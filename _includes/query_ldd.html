@@ -50,31 +50,7 @@
 		</div>
 
 		<!-- Sort button -->
-		<div class="btn-group pull-right">
-		  <button type="button" class="btn btn-default dropdown-toggle btn-sortLDD" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		    <i class="fa fa-filter"></i> <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu">
-			<li class="dropdown-header">Sort by:</li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("price", "ASC")'>Price (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("price", "DESC")'>Price (high to low)</a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("value", "ASC")'>Total price (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("value", "DESC")'>Total Price (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("designid", "ASC")'>Design ID (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("designid", "DESC")'>Design ID (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("ID", "ASC")'>Element number (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("ID", "DESC")'>Element number (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("qte", "ASC")'>Quantity (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("qte", "DESC")'>Quantity (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("color", "ASC")'>Color (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("color", "DESC")'>Color (high to low)</a></a></li>
-		  </ul>
-		</div>
+		{% include sort.html param="App.LDDUpload.SortTable" class="pull-right" %}
 	</div>
 
 	<!-- Table -->

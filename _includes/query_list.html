@@ -44,31 +44,7 @@
 			<button class="btn btn-danger btn-deleteLDD" onclick="App.List.deleteList();"><i class="fa fa-trash-o"></i> Delete list</button>
 			<button class="btn btn-primary btn-analyseLDD" onclick="App.List.Analyse();"><i class="fa fa-search"></i> Find value</button>
 			<!-- Sort button -->
-			<div class="pull-right btn-group">
-				<button type="button" class="btn btn-default dropdown-toggle btn-sortLDD" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<i class="fa fa-filter"></i> <span class="caret"></span>
-				</button>
-					<ul class="dropdown-menu">
-						<li class="dropdown-header">Sort by:</li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("price", "ASC")'>Price (low to high)</a></li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("price", "DESC")'>Price (high to low)</a></li>
-
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("value", "ASC")'>Total price (low to high)</a></li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("value", "DESC")'>Total Price (high to low)</a></a></li>
-
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("designid", "ASC")'>Design ID (low to high)</a></li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("designid", "DESC")'>Design ID (high to low)</a></a></li>
-
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("ID", "ASC")'>Element number (low to high)</a></li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("ID", "DESC")'>Element number (high to low)</a></a></li>
-
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("qte", "ASC")'>Quantity (low to high)</a></li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("qte", "DESC")'>Quantity (high to low)</a></a></li>
-
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("color", "ASC")'>Color (low to high)</a></li>
-						<li><a href="javascript:void(0);" onclick='App.List.SortTable("color", "DESC")'>Color (high to low)</a></a></li>
-					</ul>
-			</div>
+			{% include sort.html param="App.List.SortTable" class="pull-right" %}
 
 			<div class="progress" id="analyseList_progress" style="display: none; margin-top: 20px;">
 			  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>

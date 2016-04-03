@@ -732,8 +732,9 @@ PBHelper.prototype.SetSearch = function() {
 	 */
 
 	var totalSearch = 0; //Number of sets to search for
-
 	this.fetchData = new Object;
+	this.SetSearch.SortValue = "ID";
+	this.SetSearch.SortOrder = "ASC";
 
 	/*
 	 * SetSearch UI variables
@@ -867,9 +868,6 @@ PBHelper.prototype.SetSearch = function() {
 				    //Stop the progress
 				    _this.UI_Progress_done();
 
-					//We can show the holder
-					$(_this.UI.Main).find(_this.UI.SetPlaceholder).show();
-
 					//Reset the button
 					_this.UI_resetButtons();
 
@@ -883,6 +881,9 @@ PBHelper.prototype.SetSearch = function() {
 	//This function reset the UI and take cares of function once everything is done
 	this.SetSearch.displayLists = function() {
 
+		//Reset the UI
+		this.UI_reset();
+
 		//For each list
 		for (var i in this.fetchData) {
 
@@ -894,15 +895,35 @@ PBHelper.prototype.SetSearch = function() {
 				this.fetchData[i].getNbElements()
 			);
 
+			//Sort the list
+			//Be careful here: sorted list will ONLY return an array of elementID (keys) based on the order the list needs to be displayed.
+			//We don't send the whole object sorted because apparently that CAN'T be done.
+			var sortedList = this.parent.SortList(this.fetchData[i].getBricks(), this.SortValue, this.SortOrder);
+
 			//All every bricks
-			for (var j in this.fetchData[i].getBricks()) {
+			for (var j in sortedList) {
 				this.parent.AddElementToTable(
 					$(this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
 					$(this.UI.Main).find(this.UI.PartsTableSource), 			// Source
-					this.fetchData[i].getBrick(j)								// Brick
+					this.fetchData[i].getBrick(sortedList[j])					// Brick
 				);
 			}
 		}
+
+		//We can show the holder
+		$(this.UI.Main).find(this.UI.SetPlaceholder).show();
+	}
+
+	//This function is called by the UI to change the order of the list.
+	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
+	this.SetSearch.SortTable = function(SortBy, Order) {
+
+		//Save the order
+		this.SortValue = SortBy;
+		this.SortOrder = Order;
+
+		//Refresh the list
+		this.displayLists();
 	}
 
 	/*
@@ -988,8 +1009,9 @@ PBHelper.prototype.BrickSearch = function() {
 	 */
 
 	 var totalSearch = 0; //Number of bricks to search for
-
 	 this.fetchData = new Object;
+	 this.BrickSearch.SortValue = "ID";
+	 this.BrickSearch.SortOrder = "ASC";
 
 	/*
 	 * BrickSearch UI variables
@@ -1120,9 +1142,6 @@ PBHelper.prototype.BrickSearch = function() {
 					//Stop the progress
 					_this.UI_Progress_done();
 
-					//We can show the holder
-					$(_this.UI.Main).find(_this.UI.Placeholder).show();
-
 					//Reset the button
 					_this.UI_resetButtons();
 
@@ -1136,21 +1155,44 @@ PBHelper.prototype.BrickSearch = function() {
 	//This function take care of displaying lists elements
 	this.BrickSearch.displayLists = function() {
 
+		//Reset the UI
+		this.UI_reset();
+
 		//For each list
 		for (var i in this.fetchData) {
 
 			//We create a the pannel
 			var createdPannelID = this.UI_createPannel( this.fetchData[i].getProperty('query') );
 
+			//Sort the list
+			//Be careful here: sorted list will ONLY return an array of elementID (keys) based on the order the list needs to be displayed.
+			//We don't send the whole object sorted because apparently that CAN'T be done.
+			var sortedList = this.parent.SortList(this.fetchData[i].getBricks(), this.SortValue, this.SortOrder);
+
 			//All every bricks
-			for (var j in this.fetchData[i].getBricks()) {
+			for (var j in sortedList) {
 				this.parent.AddElementToTable(
 					$(this.UI.Main).find(createdPannelID + " > table > tbody"),	// Destination
 					$(this.UI.Main).find(this.UI.PartsTableSource), 			// Source
-					this.fetchData[i].getBrick(j)								// Brick
+					this.fetchData[i].getBrick(sortedList[j])					// Brick
 				);
 			}
 		}
+
+		//We can show the holder
+		$(this.UI.Main).find(this.UI.Placeholder).show();
+	}
+
+	//This function is called by the UI to change the order of the list.
+	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
+	this.BrickSearch.SortTable = function(SortBy, Order) {
+
+		//Save the order
+		this.SortValue = SortBy;
+		this.SortOrder = Order;
+
+		//Refresh the list
+		this.displayLists();
 	}
 
 	/*
