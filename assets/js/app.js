@@ -175,7 +175,7 @@ function PBHelper (options) {
 		});
 
 		//Taking care of the action buttons
-		$(t).find(".action .btn-danger").click(function() {
+		$(t).find(".action button.btn-delete").click(function() {
 			bootbox.confirm({
 				title: "Delete from list?",
 				message: "Are you sure you want to delete <strong>"+brick.data.getProperty('itemDesc')+"</strong> in "+brick.data.getProperty('colorName')+" from this list?",
@@ -198,11 +198,14 @@ function PBHelper (options) {
 		});
 
 		//Setup the qte button
-		$(t).find(".qte > div.btn").click(function() {
+		$(t).find(".action > button.btn-edit").click(function() {
 			bootbox.dialog({
-			  message:	"<center><button class='btn btn-success btn-xs' onclick='qteMinus(this);' ><i class='fa fa-minus'></i></button>&nbsp;" +
-			  			"<input type='number' value='"+brick.qte+"'></input>" +
-			  			"&nbsp;<button class='btn btn-success btn-xs' onclick='qtePlus(this);'><i class='fa fa-plus'></i></button></center>",
+			  size: 'small',
+			  message:	"<center><form class='form-inline'><div class='form-group'>" +  //!TODO: Bouger dans un fichier .html
+			  			"<button class='btn btn-success btn-sm' onclick='qteMinus(this);' ><i class='fa fa-minus'></i></button>&nbsp;" +
+			  			"<input type='number' min='1' class='form-control' value='"+brick.qte+"'></input>" +
+			  			"&nbsp;<button class='btn btn-success btn-sm' onclick='qtePlus(this);'><i class='fa fa-plus'></i></button>" +
+			  			'</div></form></center>',
 			  title: "Edit quantity",
 			  buttons: {
 			    success: {
@@ -322,7 +325,13 @@ function PBHelper (options) {
 	}
 
 	this.sendLEGODataToCache = function(data) {
-		$.post( this.cache_base_url, {'data': JSON.stringify(data)});
+		$.post( this.cache_base_url, {'data': JSON.stringify(data)}, 'json');
+	}
+
+	this.handleError = function(data) {
+		if (data.errorCode != 200) {
+			console.warn("Error in PHP Ajax request: " + data.errorDetail + " (Error code " + data.errorCode + ")");
+		}
 	}
 
 	/*
@@ -612,7 +621,7 @@ PBHelper.prototype.LDDUpload = function() {
 				//Hide the spinner
 				$("#LDDUpload_modalSpinner").modal('hide');
 
-				//Reload user
+				//Reload the main lists
 				_this.parent.List.setupMainList();
 
 				//Go to lists
@@ -1303,8 +1312,8 @@ PBHelper.prototype.List = function() {
 			'pass': pass,
 		}, function( data ) {
 
-			//Convert JSON
-			var data = $.parseJSON(data);
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(data);
 
 			//Enabled buttons
 			$(_this.UI.Main).find(_this.UI.Login).find(".btn").removeAttr('disabled');
@@ -1317,7 +1326,7 @@ PBHelper.prototype.List = function() {
 			} else {
 				_this.LoadUsers();
 			}
-		});
+		}, 'json');
 
 	}
 
@@ -1364,8 +1373,8 @@ PBHelper.prototype.List = function() {
 			'pass2': pass2
 		}, function( data ) {
 
-			//Convert JSON
-			var data = $.parseJSON(data);
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(data);
 
 			//Enabled buttons
 			$(_this.UI.Main).find(_this.UI.Register).find(".btn").removeAttr('disabled');
@@ -1378,7 +1387,7 @@ PBHelper.prototype.List = function() {
 			} else {
 				_this.UI_ShowLogin("Account registered successfully! You can now login.");
 			}
-		});
+		}, 'json');
 	 }
 
 	//This function takes care of loading the user info and his lists from PHP
@@ -1397,8 +1406,8 @@ PBHelper.prototype.List = function() {
 		//We get user data
 		$.post( this.parent.users_base_url + "?action=List", function( reponse ) {
 
-			//Convert JSON
-			var reponse = $.parseJSON(reponse);
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
 
 			//Process reponse
 			if (reponse.success) {
@@ -1420,8 +1429,9 @@ PBHelper.prototype.List = function() {
 			} else {
 				//!TODO: Bootbox
 				console.log("ERROR", reponse);
+
 			}
-		});
+		}, 'json');
 	}
 
 	//This function takes the user lists returned by PHP and ut it into 'this'
@@ -1470,9 +1480,12 @@ PBHelper.prototype.List = function() {
 		//We get user data
 		$.post( this.parent.users_base_url + "?action=logout", function( reponse ) {
 
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
+
 			//Reload the list
 			_this.LoadUsers();
-		});
+		}, 'json');
 	}
 
 	//This function takes care of analysing the lists and displaying the list of the lists
@@ -1550,8 +1563,8 @@ PBHelper.prototype.List = function() {
 		//Send to PHP!
 		$.post( _this.parent.users_base_url + "?action=createList", {'listName' : listName, 'listAsset': listAsset}, function( reponse ) {
 
-			//Convert JSON
-			var reponse = $.parseJSON(reponse);
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
 
 			//Process reponse
 			if (reponse.success) {
@@ -1572,7 +1585,7 @@ PBHelper.prototype.List = function() {
 				//Display the error in an alert
 				bootbox.alert("An error occured : " + reponse.msg);
 			}
-		});
+		}, 'json');
 	}
 
 	//This function is called when a list is selected. It define the current list and display it
@@ -1805,6 +1818,9 @@ PBHelper.prototype.List = function() {
 		//Post to PHP so the part is added to the list
 		$.post( this.parent.users_base_url + "?action=addElementToList", {'listID' : listID, 'elementID' : brick.data.getProperty('ID')}, function( reponse ) {
 
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
+
 			//!TODO: Ajouter feedback dans l'UI
 
 			//Add the element to the master list
@@ -1815,7 +1831,10 @@ PBHelper.prototype.List = function() {
 			if (listID == _this.active) {
 				_this.refreshList();
 			}
-		});
+
+			//We also reload the main lists to propagate the part count change
+			_this.setupMainList();
+		}, 'json');
 	}
 
 	this.List.addElements = function(listID, LegoList, callback) {
@@ -1846,8 +1865,11 @@ PBHelper.prototype.List = function() {
 
 		//Post to PHP so the part is added to the list
 		$.post( this.parent.users_base_url + "?action=addElementArrayToList", {'listID' : listID, 'data' : JSON.stringify(query) }, function( reponse ) {
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
+
 			callback();
-		});
+		}, 'json');
 	}
 
 	this.List.deleteElement = function(brick) {
@@ -1857,17 +1879,46 @@ PBHelper.prototype.List = function() {
 
 		//Post to PHP so the part is delete from the list
 		$.post( this.parent.users_base_url + "?action=delElementfromList", {'listID' : this.active, 'elementID' : brick.data.getProperty('ID')}, function( reponse ) {
+
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
+
+			//Delete the brick in teh lists and refresh the list
 			_this.lists[_this.active].delBrick(brick);
 			_this.refreshList();
-		});
+
+			//We also reload the main lists to propagate the part count change
+			_this.setupMainList();
+		}, 'json');
 	}
 
 	this.List.editElementQte = function(brick, qte) {
 
-		//!TODO: Do the PHP Thing
+		//Parse the qté as a int
+		qte = parseInt(qte);
 
-		this.lists[this.active].setBrickQte(brick.data, qte);
-		this.refreshList();
+		//If qte if under 1, we stop right there
+		if (qte < 1) {
+			bootbox.alert("<i class='fa fa-exclamation-triangle red'></i> Quantity can't be less than 1");
+			return;
+		}
+
+		//Keep this safe
+		var _this = this;
+
+		//Post to PHP so the part is delete from the list
+		$.post( this.parent.users_base_url + "?action=editElementQte", {'listID' : this.active, 'elementID' : brick.data.getProperty('ID'), 'qte': qte}, function( reponse ) {
+
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
+
+			//Edit the qty in the list and refresh the list
+			_this.lists[_this.active].setBrickQte(brick.data, qte);
+			_this.refreshList();
+
+			//We also reload the main lists to propagate the part count change
+			_this.setupMainList();
+		}, 'json');
 	}
 
 	this.List.deleteList = function() {
@@ -1895,6 +1946,9 @@ PBHelper.prototype.List = function() {
 			  		//Going for php
 					$.post( _this.parent.users_base_url + "?action=deleteList", {'listID' : _this.active}, function( reponse ) {
 
+						//This will ned need to be replace somehere else...
+						_this.parent.handleError(reponse);
+
 						//Delete the list in the
 						delete _this.lists[_this.active];
 
@@ -1906,7 +1960,7 @@ PBHelper.prototype.List = function() {
 
 						//Same as creating list, we reload everything. Easier this way
 						_this.setupMainList();
-					});
+					}, 'json');
 
 			  	}
 			}
@@ -2146,8 +2200,11 @@ function LegoBrickList(initData) {
 		//Small shortcut fot the brick ID
 		var position = this.getBrickElementPosition(lego_element.getProperty("ID"));
 
+		//Make sure it's an it
+		qte = parseInt(qte);
+
 		//if quantity is undefined, we set it to 1
-		if (qte == undefined) { return false; }
+		if (qte == undefined || qte == "NaN") { return false; }
 
 		//Check if this brick already exist in the list
 		if ( bricks[position] == undefined ) {

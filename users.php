@@ -34,7 +34,7 @@ $session = new session();
 			if ($name == "" || $email == "" || $pass1 == "" || $pass2 == "") {
 				returnPage(array(
 					'errorCode' => 402,
-					'msg' => "Missing param",
+					'errorDetail' => "Missing param",
 				));
 			}
 
@@ -42,7 +42,7 @@ $session = new session();
 			if ($pass1 != $pass2) {
 				returnPage(array(
 					'errorCode' => 403,
-					'msg' => "Pass mismatch param",
+					'errorDetail' => "Pass mismatch param",
 				));
 			}
 
@@ -52,7 +52,7 @@ $session = new session();
 			if (isset($ligne) && !empty($ligne)) {
 				returnPage(array(
 					'errorCode' => 404,
-					'msg' => "Email already registered",
+					'errorDetail' => "Email already registered",
 				));
 			}
 
@@ -80,7 +80,7 @@ $session = new session();
 			if ($session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 407,
-					'msg' => "Already logged",
+					'errorDetail' => "Already logged",
 				));
 			}
 
@@ -102,7 +102,7 @@ $session = new session();
 
 				returnPage(array(
 					'errorCode' => 405,
-					'msg' => implode("; ", $reponse),
+					'errorDetail' => implode("; ", $reponse),
 				));
 
 			}
@@ -117,7 +117,7 @@ $session = new session();
 
 				returnPage(array(
 					'errorCode' => 406,
-					'msg' => "Not logged in",
+					'errorDetail' => "Not logged in",
 				));
 
 			} else {
@@ -170,7 +170,7 @@ $session = new session();
 			if (!$session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 408,
-					'msg' => "Not logged in",
+					'errorDetail' => "Not logged in",
 				));
 			}
 
@@ -182,7 +182,7 @@ $session = new session();
 			if ($listName == "") {
 				returnPage(array(
 					'errorCode' => 409,
-					'msg' => "List name can't be blank",
+					'errorDetail' => "List name can't be blank",
 				));
 			}
 
@@ -210,7 +210,7 @@ $session = new session();
 			if (!$session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 408,
-					'msg' => "Not logged in",
+					'errorDetail' => "Not logged in",
 				));
 			}
 
@@ -223,7 +223,7 @@ $session = new session();
 			if (empty($result)) {
 				returnPage(array(
 					'errorCode' => 410,
-					'msg' => "List not owned",
+					'errorDetail' => "List not owned",
 				));
 			}
 
@@ -244,7 +244,7 @@ $session = new session();
 			if (!$session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 408,
-					'msg' => "Not logged in",
+					'errorDetail' => "Not logged in",
 				));
 			}
 
@@ -256,7 +256,7 @@ $session = new session();
 			if ($listID == 0 || $elementID == 0) {
 				returnPage(array(
 					'errorCode' => 402,
-					'msg' => "Missing param",
+					'errorDetail' => "Missing param",
 				));
 			}
 
@@ -266,7 +266,7 @@ $session = new session();
 			if (empty($result)) {
 				returnPage(array(
 					'errorCode' => 410,
-					'msg' => "List not owned",
+					'errorDetail' => "List not owned",
 				));
 			}
 
@@ -300,7 +300,7 @@ $session = new session();
 			if (!$session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 408,
-					'msg' => "Not logged in",
+					'errorDetail' => "Not logged in",
 				));
 			}
 
@@ -312,7 +312,7 @@ $session = new session();
 			if ($listID == 0 || $data == "") {
 				returnPage(array(
 					'errorCode' => 402,
-					'msg' => "Missing param",
+					'errorDetail' => "Missing param",
 				));
 			}
 
@@ -325,7 +325,7 @@ $session = new session();
 			if (empty($result)) {
 				returnPage(array(
 					'errorCode' => 410,
-					'msg' => "List not owned",
+					'errorDetail' => "List not owned",
 				));
 			}
 
@@ -362,7 +362,7 @@ $session = new session();
 			if (!$session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 408,
-					'msg' => "Not logged in",
+					'errorDetail' => "Not logged in",
 				));
 			}
 
@@ -376,7 +376,7 @@ $session = new session();
 			if (empty($result)) {
 				returnPage(array(
 					'errorCode' => 410,
-					'msg' => "List not owned",
+					'errorDetail' => "List not owned",
 				));
 			}
 
@@ -393,12 +393,64 @@ $session = new session();
 
 		break;
 
+		//! EDIT ELEMENT QTE
+		case 'editElementQte':
+
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'errorDetail' => "Not logged in",
+				));
+			}
+
+			//Get the post data
+			$listID = request_var('listID', 0);
+			$elementID = request_var('elementID', 0);
+			$qte = request_var('qte', 0);
+
+			//If qty is less than 1, we stop right there
+			if ($qte < 1) {
+				returnPage(array(
+					'errorCode' => 411,
+					'errorDetail' => "Qty can't be less than 1",
+				));
+			}
+
+
+			//Get infos from the list. This is just make sure the list is owned by the user
+			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			if (empty($result)) {
+				returnPage(array(
+					'errorCode' => 410,
+					'errorDetail' => "List not owned",
+				));
+			}
+
+			//Do it
+			$MySQL->update(
+				"listElements",					//	FROM
+				array('qte' => $qte),			//	WHAT
+				array(							// WHERE
+					"elementID" => $elementID,
+					"AND listID" => $listID
+				)
+			);
+
+			returnPage(array(
+				'success' 	=> true,
+			));
+
+		break;
+
 		//! DEFAULT
 		default:
 
 			returnPage(array(
 				'errorCode' => 401,
-				'msg' => "No Action",
+				'errorDetail' => "No Action",
 			));
 
 		break;
@@ -408,7 +460,6 @@ $session = new session();
 
 		//Check for missing stuff. Add default values
 		$data['success'] = (isset($data['success'])) ? $data['success'] : false;
-		$data['msg'] = (isset($data['msg'])) ? $data['msg'] : "";
 		$data['errorCode'] = (isset($data['errorCode'])) ? $data['errorCode'] : 200;
 		$data['errorDetail'] = (isset($data['errorDetail'])) ? $data['errorDetail'] : "";
 		$data['data'] = (isset($data['data'])) ? $data['data'] : array();
