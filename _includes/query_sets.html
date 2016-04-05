@@ -53,6 +53,10 @@
 						<p>Number of elements found: <span class="setNbPieces"></span></p>
 					</div>
 				</div>
+				<div class="row" style="margin-top: 10px;">
+					<!-- Split add button -->
+					{% include wholeListAddButton.html param="App.SetSearch.Save" %}
+				</div>
 			</div>
 		</div>
 
@@ -71,3 +75,5 @@
 
 	<div class="alert alert-danger" role="alert" id="setNotFound"><span class="glyphicon glyphicon-exclamation-sign"></span> <span class="txt"></span></div>
 </div>
+
+{% include savingSpinner.html id="SetSearch_modalSpinner" %}

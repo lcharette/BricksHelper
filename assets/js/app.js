@@ -328,9 +328,14 @@ function PBHelper (options) {
 		$.post( this.cache_base_url, {'data': JSON.stringify(data)}, 'json');
 	}
 
-	this.handleError = function(data) {
+	this.handleError = function(data, supressDialog) {
 		if (data.errorCode != 200) {
 			console.warn("Error in PHP Ajax request: " + data.errorDetail + " (Error code " + data.errorCode + ")");
+
+			if (!supressDialog) {
+				//Display the error in an alert
+				bootbox.alert("An error occured : " + data.errorDetail);
+			}
 		}
 	}
 
@@ -613,23 +618,31 @@ PBHelper.prototype.LDDUpload = function() {
 		$("#LDDUpload_modalSpinner").modal('show');
 
 		//STEP N° 1 : Create a list
-		_this.parent.List.CreateList( _this.Parts.getProperty("fileName"), _this.Parts.getProperty("asset"), function (newListID) {
+		_this.parent.List.CreateList( _this.Parts.getProperty("fileName"), _this.Parts.getProperty("asset"), function (success, newListID) {
 
-			//STEP N° 2 : Add the bricks to the new list
-			_this.parent.List.addElements(newListID, _this.Parts, function() {
+			if (success) {
+
+				//STEP N° 2 : Add the bricks to the new list
+				_this.parent.List.addElements(newListID, _this.Parts, function() {
+
+					//Hide the spinner
+					$("#LDDUpload_modalSpinner").modal('hide');
+
+					//Reload the main lists
+					_this.parent.List.setupMainList();
+
+					//Go to lists
+					_this.parent.Navigation.Go(".nav-app-list");
+
+					//And show the list of lists
+					_this.parent.List.UI_ShowLists();
+				});
+
+			} else {
 
 				//Hide the spinner
 				$("#LDDUpload_modalSpinner").modal('hide');
-
-				//Reload the main lists
-				_this.parent.List.setupMainList();
-
-				//Go to lists
-				_this.parent.Navigation.Go(".nav-app-list");
-
-				//And show the list of lists
-				_this.parent.List.UI_ShowLists();
-			});
+			}
 		});
 	}
 
@@ -888,12 +901,7 @@ PBHelper.prototype.SetSearch = function() {
 		for (var i in this.fetchData) {
 
 			//We create a the pannel
-			var createdPannelID = this.UI_createPannel(
-				this.fetchData[i].getProperty('ProductName'),
-				this.fetchData[i].getProperty('ProductAsset'),
-				this.fetchData[i].getProperty('ProductNo'),
-				this.fetchData[i].getNbElements()
-			);
+			var createdPannelID = this.UI_createPannel(i);
 
 			//Sort the list
 			//Be careful here: sorted list will ONLY return an array of elementID (keys) based on the order the list needs to be displayed.
@@ -926,6 +934,46 @@ PBHelper.prototype.SetSearch = function() {
 		this.displayLists();
 	}
 
+	this.SetSearch.Save = function(element) {
+
+		//spinner it !
+		$("#SetSearch_modalSpinner").modal('show');
+
+		//Keep this safe
+		var _this = this;
+
+		//Small shortcut so it's easier later
+		var listData = this.fetchData[$(element).parents('.panel').data('list')];
+
+		//STEP N° 1 : Create a list
+		this.parent.List.CreateList( listData.getProperty("ProductName"), listData.getProperty("ProductAsset"), function (success, newListID) {
+
+			if (success) {
+
+				//STEP N° 2 : Add the bricks to the new list
+				_this.parent.List.addElements(newListID, listData, function() {
+
+					//Hide the spinner
+					$("#SetSearch_modalSpinner").modal('hide');
+
+					//Reload the main lists
+					_this.parent.List.setupMainList();
+
+					//Go to lists
+					_this.parent.Navigation.Go(".nav-app-list");
+
+					//And show the list of lists
+					_this.parent.List.UI_ShowLists();
+				});
+
+			} else {
+
+				//Hide the spinner
+				$("#SetSearch_modalSpinner").modal('hide');
+			}
+		});
+	}
+
 	/*
 	 * UI Functions
 	 */
@@ -940,22 +988,28 @@ PBHelper.prototype.SetSearch = function() {
 	}
 
 	//This function create a div containing the set infos and part table
-	this.SetSearch.UI_createPannel = function(setName, setImage, setNumber, setNbPieces) {
-
-		//Set the pannel details
-		$(this.UI.Main).find(this.UI.SetPannel).find(".panel-heading").html(setName);
-		$(this.UI.Main).find(this.UI.SetPannel).find(".setImg").attr('src', setImage);
-		$(this.UI.Main).find(this.UI.SetPannel).find(".setNumber").html(setNumber);
-		$(this.UI.Main).find(this.UI.SetPannel).find(".setNbPieces").html(setNbPieces);
+	this.SetSearch.UI_createPannel = function(i) {
 
 		//We copy the pannel
-		$(this.UI.Main).find(this.UI.SetPannel).clone().attr('id', 'SetPannel_' + setNumber).appendTo($(this.UI.Main).find(this.UI.SetPlaceholder));
+		var t = $(this.UI.Main).find(this.UI.SetPannel).clone().attr('id', 'SetPannel_' + this.fetchData[i].getProperty('ProductNo'));
+
+		//Set the pannel details
+		$(t).find(".panel-heading").html(this.fetchData[i].getProperty('ProductName'));
+		$(t).find(".setImg").attr('src', this.fetchData[i].getProperty('ProductAsset'));
+		$(t).find(".setNumber").html(this.fetchData[i].getProperty('ProductNo'));
+		$(t).find(".setNbPieces").html(this.fetchData[i].getNbElements());
+
+		//For the save list
+		$(t).data('list', i);
+
+		//Append to the source
+		$(t).appendTo($(this.UI.Main).find(this.UI.SetPlaceholder));
 
 		//Reset the template
 		this.UI_resetTemplatePannel();
 
 		//We return the newly created if location
-		return '#SetPannel_' + setNumber;
+		return '#SetPannel_' + this.fetchData[i].getProperty('ProductNo');
 	}
 
 	//This function reset the template pannel
@@ -1449,7 +1503,7 @@ PBHelper.prototype.List = function() {
 		$.post( this.parent.users_base_url + "?action=List", function( reponse ) {
 
 			//This will ned need to be replace somehere else...
-			_this.parent.handleError(reponse);
+			_this.parent.handleError(reponse, true);
 
 			//Process reponse
 			if (reponse.success) {
@@ -1577,7 +1631,7 @@ PBHelper.prototype.List = function() {
 		//Call Bootbox Prompt
 		bootbox.prompt("Please enter your new list name", function(result) {
 		  if (result != null && result != "") {
-		  	_this.CreateList(result, null, function(newListID) {
+		  	_this.CreateList(result, null, function(success, newListID) {
 
 			  	//Reload the list
 				_this.setupMainList();
@@ -1620,12 +1674,11 @@ PBHelper.prototype.List = function() {
 				});
 
 				//Do the callback !
-				callback(reponse.newListID);
+				callback(true, reponse.newListID);
 
 			} else {
 
-				//Display the error in an alert
-				bootbox.alert("An error occured : " + reponse.msg);
+				callback(false);
 			}
 		}, 'json');
 	}

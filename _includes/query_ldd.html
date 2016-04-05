@@ -35,19 +35,8 @@
 		<hr />
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
 
-		<!-- Split button -->
-		<div class="btn-group">
-		  <button type="button" class="btn btn-success" onclick="App.LDDUpload.Save();"><i class="fa fa-floppy-o"></i> Save to new list</button>
-		  <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		    <span class="caret"></span>
-		    <span class="sr-only">Toggle Dropdown</span>
-		  </button>
-		  <ul class="dropdown-menu">
-
-		    <li role="separator" class="divider"></li>
-		    <li><a href="#">Create new list</a></li>
-		  </ul>
-		</div>
+		<!-- Split add button -->
+		{% include wholeListAddButton.html param="App.LDDUpload.Save" %}
 
 		<!-- Sort button -->
 		{% include sort.html param="App.LDDUpload.SortTable" class="pull-right" %}
@@ -69,13 +58,7 @@
 	</table>
 </div>
 
-<div class="modal fade" id="LDDUpload_modalSpinner" data-backdrop="static" data-keyboard="false">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content" style="text-align: center">
-		<div class="modal-body"><h2 class="totalFit">Saving <i class="fa fa-spinner fa-spin"></i></h2></div>
-    </div>
-  </div>
-</div>
+{% include savingSpinner.html id="LDDUpload_modalSpinner" %}
 
 <div class="hidden">
 	<table id="LDDtemplateTable">
