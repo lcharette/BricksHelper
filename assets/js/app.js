@@ -503,6 +503,8 @@ PBHelper.prototype.LDDUpload = function() {
 								'ID' : parseInt(data.Bricks[found_brick].ItemNo),
 								'designid' : parseInt(data.Bricks[found_brick].DesignId),
 								'asset': data.ImageBaseUrl + data.Bricks[found_brick].Asset,
+								'assetRaw': data.Bricks[found_brick].Asset,
+								'ImageBaseUrl': data.ImageBaseUrl,
 								'itemDesc': data.Bricks[found_brick].ItemDescr,
 								'price': data.Bricks[found_brick].Price,
 								'currency': data.Bricks[found_brick].CId,
@@ -854,6 +856,8 @@ PBHelper.prototype.SetSearch = function() {
 							'ID' : parseInt(brick.ItemNo),
 							'designid' : parseInt(brick.DesignId),
 							'asset': data.ImageBaseUrl + brick.Asset,
+							'assetRaw': brick.Asset,
+							'ImageBaseUrl': data.ImageBaseUrl,
 							'itemDesc': brick.ItemDescr,
 							'price': brick.Price,
 							'currency': brick.CId,
@@ -1169,6 +1173,8 @@ PBHelper.prototype.BrickSearch = function() {
 							'ID' : parseInt(brick.ItemNo),
 							'designid' : parseInt(brick.DesignId),
 							'asset': data.ImageBaseUrl + brick.Asset,
+							'assetRaw': brick.Asset,
+							'ImageBaseUrl': data.ImageBaseUrl,
 							'itemDesc': brick.ItemDescr,
 							'price': brick.Price,
 							'currency': brick.CId,
@@ -1553,6 +1559,8 @@ PBHelper.prototype.List = function() {
 					'ID' : parseInt(brick.elementID),
 					'designid' : parseInt(brick.designID),
 					'asset' : _this.parent.LEGOBaseURL + brick.Asset,
+					'assetRaw': brick.Asset,
+					'ImageBaseUrl': _this.parent.LEGOBaseURL,
 					'itemDesc' : brick.ItemDescr,
 				});
 
@@ -1816,6 +1824,8 @@ PBHelper.prototype.List = function() {
 					//We will also update other infos, just in case
 					//N.B.: We shoul'd have to touch the color
 					brick.data.setProperty("asset", data.ImageBaseUrl + data.Bricks[0].Asset);
+					brick.data.setProperty("assetRaw", data.Bricks[0].Asset);
+					brick.data.setProperty("ImageBaseUrl", data.ImageBaseUrl);
 					brick.data.setProperty("designid", data.Bricks[0].DesignId);
 					brick.data.setProperty("itemDesc", data.Bricks[0].ItemDescr);
 					brick.data.setProperty("stock", data.Bricks[0].SQty);
@@ -2412,6 +2422,48 @@ function LegoBrickList(initData) {
 		}
 	}
 
+	this.testString = function() {
+		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
+		for (var key in bricks) {
+			brick = this.getBrick(key);
+			if (brick.data.getProperty('stock') >= brick.qte) {
+
+				for (i = 0; i < brick.qte; i++) {
+
+					var t = {
+						"DesignId": brick.data.getProperty('designid'),
+						"colorCode": brick.data.getProperty('color'),
+						"nbReq": brick.qte,
+						"ItemNo": brick.data.getProperty('ID'),
+						"ItemDescr": brick.data.getProperty('itemDesc'),
+						//"ColourLikeDescr":"Black",
+						"ColourDescr": brick.data.getProperty('colorStr'),
+						//"MaingroupDescr":"Bricks, Special Circles And Angles",
+						"Asset": brick.data.getProperty('assetRaw'),
+						//"MaxQty":200,
+						"Ip":false,
+						"Price": brick.data.getProperty('price'),
+						"CId": " $"+brick.data.getProperty('currency'), //" $CAD",
+						"SQty": brick.data.getProperty('stock'),
+						//"PriceStr":"CAD 0.08",
+						//"PriceWithTaxStr":"CAD 0.08",
+						"ItemUnavailable":false,
+						"UnavailableLink":null,
+						"UnavailableReason":null,
+						"baseUrl":"https://mi-od-live-s.legocdn.com"
+					}
+
+					//Add to response
+					reponse = reponse + 'a.addToBasket(' + JSON.stringify(t) + ', b);';
+				}
+			}
+			//console.log(brick, brick.data.getProperties());
+		}
+
+		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
+		return reponse;
+	}
+
 	/*
 	 * Private functions
 	 */
@@ -2489,7 +2541,9 @@ function LegoElement(initData) {
 		'itemDesc' : "",
 		'price' : 0,
 		'currency': "",
-		'stock': -1
+		'stock': -1,
+		'assetRaw': '',
+		'ImageBaseUrl': ''
 	};
 
 	/*
@@ -2698,17 +2752,3 @@ function qtePlus(element) {
 function qteMinus(element) {
 	$(element).parent().find('input').val( parseInt($(element).parent().find('input').val()) - 1 );
 }
-
-
-	/*this.LDDUpload.testString = function() {
-		var reponse = 'var a = angular.element(document.getElementsByClassName("rp")).scope(); var b = angular.element(document.getElementsByClassName("rp-bag-list")).scope();';
-		$.each(this.SetList, function(i,brick) {
-			if (brick.SQty >= brick.nbReq) {
-				for (i = 0; i < brick.nbReq; i++) {
-					reponse = reponse + 'a.addToBasket(' + JSON.stringify(brick) + ', b);';
-				}
-			}
-		});
-		reponse = reponse + 'angular.element(document.getElementsByClassName("rp")).scope().$apply();';
-		console.log(reponse);
-	}*/
