@@ -201,9 +201,9 @@ function PBHelper (options) {
 		$(t).find(".action > button.btn-edit").click(function() {
 			bootbox.dialog({
 			  size: 'small',
-			  message:	"<center><form class='form-inline'><div class='form-group'>" +  //!TODO: Bouger dans un fichier .html
+			  message:	"<center><form class='form-inline'><div class='form-group-sm'>" +  //!TODO: Bouger dans un fichier .html
 			  			"<button class='btn btn-success btn-sm' onclick='qteMinus(this);' ><i class='fa fa-minus'></i></button>&nbsp;" +
-			  			"<input type='number' min='1' class='form-control' value='"+brick.qte+"'></input>" +
+			  			"<input type='number' min='1' style='width: 35%;' class='form-control' value='"+brick.qte+"'></input>" +
 			  			"&nbsp;<button class='btn btn-success btn-sm' onclick='qtePlus(this);'><i class='fa fa-plus'></i></button>" +
 			  			'</div></form></center>',
 			  title: "Edit quantity",

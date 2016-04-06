@@ -56,10 +56,12 @@ label > small {
  * My list
  */
 
-.nav-app-list > .loginPanel,
-.nav-app-list > .registerPanel {
-	width: 70%;
-	margin-left: 15%;
+@media screen and (min-width: 600px) {
+	.nav-app-list > .loginPanel,
+	.nav-app-list > .registerPanel {
+		width: 70%;
+		margin-left: 15%;
+	}
 }
 
 .nav-app-list > .loginPanel > .content,
