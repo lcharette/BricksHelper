@@ -160,6 +160,7 @@ $session = new session();
 		case 'logout':
 
 			$session->logout();
+			returnPage(array('success' 	=> true));
 
 		break;
 

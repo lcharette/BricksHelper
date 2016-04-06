@@ -1423,7 +1423,6 @@ PBHelper.prototype.List = function() {
 				_this.LoadUsers();
 			}
 		}, 'json');
-
 	}
 
 	//This function takes care of the registration procedure
