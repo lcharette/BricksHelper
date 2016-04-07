@@ -4,22 +4,22 @@
 	</button>
 	<ul class="dropdown-menu">
 		<li class="dropdown-header">Sort by:</li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("price", "ASC")'>Price (low to high)</a></li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("price", "DESC")'>Price (high to low)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("price", "ASC", this)'>Price (low to high)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("price", "DESC", this)'>Price (high to low)</a></li>
 
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("value", "ASC")'>Total price (low to high)</a></li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("value", "DESC")'>Total Price (high to low)</a></a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("value", "ASC", this)'>Total price (low to high)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("value", "DESC", this)'>Total Price (high to low)</a></a></li>
 
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("designid", "ASC")'>Design ID (low to high)</a></li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("designid", "DESC")'>Design ID (high to low)</a></a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("designid", "ASC", this)'>Design ID (low to high)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("designid", "DESC", this)'>Design ID (high to low)</a></a></li>
 
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("ID", "ASC")'>Element number (low to high)</a></li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("ID", "DESC")'>Element number (high to low)</a></a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("ID", "ASC", this)'>Element number (low to high)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("ID", "DESC", this)'>Element number (high to low)</a></a></li>
 
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("qte", "ASC")'>Quantity (low to high)</a></li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("qte", "DESC")'>Quantity (high to low)</a></a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("qte", "ASC", this)'>Quantity (low to high)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("qte", "DESC", this)'>Quantity (high to low)</a></a></li>
 
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("color", "ASC")'>Color (low to high)</a></li>
-		<li><a href="javascript:void(0);" onclick='{{ include.param }}("color", "DESC")'>Color (high to low)</a></a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("color", "ASC", this)'>Color (low to high)</a></li>
+		<li><a href="javascript:void(0);" onclick='{{ include.param }}("color", "DESC", this)'>Color (high to low)</a></a></li>
 	</ul>
 </div>

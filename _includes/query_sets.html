@@ -12,9 +12,6 @@
 	</div>
 
 	<button type="submit" class="btn btn-primary">Submit</button>
-
-	<!-- Sort button -->
-	{% include sort.html param="App.SetSearch.SortTable" class="pull-right" %}
 </form>
 
 <div class="progressDiv" id="setProgress" style="display: none;">
@@ -56,6 +53,9 @@
 				<div class="row" style="margin-top: 10px;">
 					<!-- Split add button -->
 					{% include wholeListAddButton.html param="App.SetSearch.Save" %}
+
+					<!-- Sort button -->
+					{% include sort.html param="App.SetSearch.SortTable" class="pull-right" %}
 				</div>
 			</div>
 		</div>

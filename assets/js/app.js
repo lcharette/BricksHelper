@@ -748,8 +748,8 @@ PBHelper.prototype.SetSearch = function() {
 
 	var totalSearch = 0; //Number of sets to search for
 	this.fetchData = new Object;
-	this.SetSearch.SortValue = "ID";
-	this.SetSearch.SortOrder = "ASC";
+	//this.SetSearch.SortValue = "ID";
+	//this.SetSearch.SortOrder = "ASC";
 
 	/*
 	 * SetSearch UI variables
@@ -845,7 +845,9 @@ PBHelper.prototype.SetSearch = function() {
 						"query" : data.REQUEST,
 						"ProductName": data.Product.ProductName,
 						"ProductAsset": data.ImageBaseUrl + data.Product.Asset,
-						"ProductNo": data.Product.ProductNo
+						"ProductNo": data.Product.ProductNo,
+						"SortOrder": "ASC",
+						"SortValue": "ID"
 					});
 
 					//Process each brick in result
@@ -910,7 +912,7 @@ PBHelper.prototype.SetSearch = function() {
 			//Sort the list
 			//Be careful here: sorted list will ONLY return an array of elementID (keys) based on the order the list needs to be displayed.
 			//We don't send the whole object sorted because apparently that CAN'T be done.
-			var sortedList = this.parent.SortList(this.fetchData[i].getBricks(), this.SortValue, this.SortOrder);
+			var sortedList = this.parent.SortList(this.fetchData[i].getBricks(), this.fetchData[i].getProperty("SortValue"), this.fetchData[i].getProperty("SortOrder"));
 
 			//All every bricks
 			for (var j in sortedList) {
@@ -928,11 +930,11 @@ PBHelper.prototype.SetSearch = function() {
 
 	//This function is called by the UI to change the order of the list.
 	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
-	this.SetSearch.SortTable = function(SortBy, Order) {
+	this.SetSearch.SortTable = function(SortBy, Order, element) {
 
 		//Save the order
-		this.SortValue = SortBy;
-		this.SortOrder = Order;
+		this.fetchData[$(element).parents('.panel').data('list')].setProperty("SortValue", SortBy);
+		this.fetchData[$(element).parents('.panel').data('list')].setProperty("SortOrder", Order);
 
 		//Refresh the list
 		this.displayLists();
@@ -1084,6 +1086,7 @@ PBHelper.prototype.BrickSearch = function() {
 		"PartsTableSource"	: "#brickTemplateTable",
 		"Progress"			: "#brickProgress",
 		"Error"				: "#bricksNotFound",
+		"ErrorPlaceholder"	: "#errorPlaceholder",
 	};
 
 	/*
@@ -1097,6 +1100,8 @@ PBHelper.prototype.BrickSearch = function() {
 
 		//Disable the search buttons
 		this.UI_disableButtons();
+
+		$(this.UI.ErrorPlaceholder).html("");
 
 		//Get the form data
 		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
@@ -1150,7 +1155,7 @@ PBHelper.prototype.BrickSearch = function() {
 					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Element " + data.REQUEST + " not found");
 
 					//Copy to the placeholder
-					$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.Placeholder));
+					$(_this.UI.Main).find(_this.UI.Error).clone().attr('id', '').appendTo($(_this.UI.Main).find(_this.UI.ErrorPlaceholder));
 
 					//For debug purpose
 					console.warn("Element " + data.REQUEST + " not found");
@@ -1162,7 +1167,9 @@ PBHelper.prototype.BrickSearch = function() {
 
 					//Create a list element
 					_this.fetchData[data.REQUEST] = new LegoBrickList({
-						"query" : data.REQUEST
+						"query" : data.REQUEST,
+						"SortOrder": "ASC",
+						"SortValue": "ID"
 					});
 
 					//Process each brick in result
@@ -1227,7 +1234,7 @@ PBHelper.prototype.BrickSearch = function() {
 			//Sort the list
 			//Be careful here: sorted list will ONLY return an array of elementID (keys) based on the order the list needs to be displayed.
 			//We don't send the whole object sorted because apparently that CAN'T be done.
-			var sortedList = this.parent.SortList(this.fetchData[i].getBricks(), this.SortValue, this.SortOrder);
+			var sortedList = this.parent.SortList(this.fetchData[i].getBricks(), this.fetchData[i].getProperty("SortValue"), this.fetchData[i].getProperty("SortOrder"));
 
 			//All every bricks
 			for (var j in sortedList) {
@@ -1245,11 +1252,11 @@ PBHelper.prototype.BrickSearch = function() {
 
 	//This function is called by the UI to change the order of the list.
 	//It only change the global param and refresh the list. The refresh function take care of the actual sorting
-	this.BrickSearch.SortTable = function(SortBy, Order) {
+	this.BrickSearch.SortTable = function(SortBy, Order, element) {
 
 		//Save the order
-		this.SortValue = SortBy;
-		this.SortOrder = Order;
+		this.fetchData[$(element).parents('.panel').data('list')].setProperty("SortValue", SortBy);
+		this.fetchData[$(element).parents('.panel').data('list')].setProperty("SortOrder", Order);
 
 		//Refresh the list
 		this.displayLists();
@@ -1271,11 +1278,17 @@ PBHelper.prototype.BrickSearch = function() {
 	//This function create a div containing the set infos and part table
 	this.BrickSearch.UI_createPannel = function(SearchQuery) {
 
-		//Set the pannel details
-		$(this.UI.Main).find(this.UI.Pannel).find(".panel-heading > span").html(SearchQuery);
-
 		//We copy the pannel
-		$(this.UI.Main).find(this.UI.Pannel).clone().attr('id', 'Pannel_' + SearchQuery).appendTo($(this.UI.Main).find(this.UI.Placeholder));
+		var t = $(this.UI.Main).find(this.UI.Pannel).clone().attr('id', 'Pannel_' + SearchQuery);
+
+		//Set the pannel details
+		$(t).find(".panel-heading > span").html(SearchQuery);
+
+		//For the save list
+		$(t).data('list', SearchQuery);
+
+		//Append to the source
+		$(t).appendTo($(this.UI.Main).find(this.UI.Placeholder));
 
 		//Reset the template
 		this.UI_resetTemplatePannel();
