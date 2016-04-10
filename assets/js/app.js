@@ -591,61 +591,98 @@ PBHelper.prototype.LDDUpload = function() {
 		//We copy it to the pannel
 		$(this.UI.Main).find(this.UI.PartsTableSource).find(".templateTable_Totalrow").clone().appendTo($(this.UI.Main).find(this.UI.LDDPannel + " > table > tfoot"));
 
+		//Setup the setupWholeListAddButton
+		this.parent.List.setupWholeListAddButton($(this.UI.Main).find(this.UI.LDDPannel), "App.LDDUpload.Save");
+
 		//We show the table
 		this.UI_showPartsTable();
 	}
 
-	this.LDDUpload.Save = function() {
+	//This function is used to save all the part found for a search query to an NEW list with a user specified name
+	this.LDDUpload.SavetoCreateList = function(element, confirm) {
 
 		//Keep this safe
 		var _this = this;
 
 		//If the list does contain error, we show a small warning
-		if (this.Parts.getProperty('listError')) {
+		if (this.Parts.getProperty('listError') && !confirm) {
 
 			bootbox.alert('<i class="fa fa-exclamation-triangle"></i> Take note: Brick without an element ID will be ignored.', function() {
-				doSave(_this);
+				_this.SavetoCreateList(element, true);
 			});
 
 		} else {
 
-			doSave(_this);
+			bootbox.prompt("Please enter your new list name", function(result) {
+				if (result != null && result != "") {
+
+					//spinner it !
+					$("#SavingModalSpinner").modal('show');
+
+					//Save while creating a new list using the specified name
+					_this.parent.List.Save_createNewList(result, _this.Parts.getProperty("asset"), _this.Parts);
+				}
+			});
 		}
 	}
 
-	//Private function to actually do the saving part
-	function doSave(_this) {
+	//This function is used to save all the part found for a search query to an NEW list using the search result name
+	this.LDDUpload.SavetoNewList = function(element, confirm) {
 
 		//spinner it !
-		$("#LDDUpload_modalSpinner").modal('show');
+		$("#SavingModalSpinner").modal('show');
 
-		//STEP N° 1 : Create a list
-		_this.parent.List.CreateList( _this.Parts.getProperty("fileName"), _this.Parts.getProperty("asset"), function (success, newListID) {
+		//Keep this safe
+		var _this = this;
 
-			if (success) {
+		//If the list does contain error, we show a small warning
+		if (this.Parts.getProperty('listError') && !confirm) {
 
-				//STEP N° 2 : Add the bricks to the new list
-				_this.parent.List.addElements(newListID, _this.Parts, function() {
+			bootbox.alert('<i class="fa fa-exclamation-triangle"></i> Take note: Brick without an element ID will be ignored.', function() {
+				_this.SavetoNewList(element, true);
+			});
 
-					//Hide the spinner
-					$("#LDDUpload_modalSpinner").modal('hide');
+		} else {
 
-					//Reload the main lists
-					_this.parent.List.setupMainList();
+			//Save while creating a new list using the Product Name name
+			this.parent.List.Save_createNewList(this.Parts.getProperty("fileName"), this.Parts.getProperty("asset"), _this.Parts);
+		}
+	}
 
-					//Go to lists
-					_this.parent.Navigation.Go(".nav-app-list");
+	//This function is used to save all the part found for a search query to an existing list
+	this.LDDUpload.Save = function(element, confirm) {
 
-					//And show the list of lists
-					_this.parent.List.UI_ShowLists();
-				});
+		//Keep this safe
+		var _this = this;
 
-			} else {
+		//If the list does contain error, we show a small warning
+		if (this.Parts.getProperty('listError') && !confirm) {
+
+			bootbox.alert('<i class="fa fa-exclamation-triangle"></i> Take note: Brick without an element ID will be ignored.', function() {
+				_this.Save(element, true);
+			});
+
+		} else {
+
+			//spinner it !
+			$("#SavingModalSpinner").modal('show');
+
+			//Add all the bricks to the selected listID
+			this.parent.List.addElements($(element).data("listid"), _this.Parts, function() {
 
 				//Hide the spinner
-				$("#LDDUpload_modalSpinner").modal('hide');
-			}
-		});
+				$("#SavingModalSpinner").modal('hide');
+
+				//Reload the main lists
+				_this.parent.List.setupMainList();
+
+				//Go to lists
+				_this.parent.Navigation.Go(".nav-app-list");
+
+				//And show the list of lists
+				_this.parent.List.UI_ShowLists();
+			});
+		}
 	}
 
 	//This function is called by the UI to change the order of the list.
@@ -940,43 +977,63 @@ PBHelper.prototype.SetSearch = function() {
 		this.displayLists();
 	}
 
-	this.SetSearch.Save = function(element) {
-
-		//spinner it !
-		$("#SetSearch_modalSpinner").modal('show');
+	//This function is used to save all the part found for a search query to an NEW list with a user specified name
+	this.SetSearch.SavetoCreateList = function(element) {
 
 		//Keep this safe
 		var _this = this;
 
+		bootbox.prompt("Please enter your new list name", function(result) {
+			if (result != null && result != "") {
+
+				//spinner it !
+				$("#SavingModalSpinner").modal('show');
+
+				//Small shortcut so it's easier later
+				var listData = _this.fetchData[$(element).parents('.panel').data('list')];
+
+				//Save while creating a new list using the specified name
+				_this.parent.List.Save_createNewList(result, listData.getProperty("ProductAsset"), listData);
+			}
+		});
+	}
+
+	//This function is used to save all the part found for a search query to an NEW list using the search result name
+	this.SetSearch.SavetoNewList = function(element) {
+
+		//spinner it !
+		$("#SavingModalSpinner").modal('show');
+
 		//Small shortcut so it's easier later
 		var listData = this.fetchData[$(element).parents('.panel').data('list')];
 
-		//STEP N° 1 : Create a list
-		this.parent.List.CreateList( listData.getProperty("ProductName"), listData.getProperty("ProductAsset"), function (success, newListID) {
+		//Save while creating a new list using the Product Name name
+		this.parent.List.Save_createNewList(listData.getProperty("ProductName"), listData.getProperty("ProductAsset"), listData);
+	}
 
-			if (success) {
+	//This function is used to save all the part found for a search query to an existing list
+	this.SetSearch.Save = function(element) {
 
-				//STEP N° 2 : Add the bricks to the new list
-				_this.parent.List.addElements(newListID, listData, function() {
+		//spinner it !
+		$("#SavingModalSpinner").modal('show');
 
-					//Hide the spinner
-					$("#SetSearch_modalSpinner").modal('hide');
+		//Keep this safe
+		var _this = this;
 
-					//Reload the main lists
-					_this.parent.List.setupMainList();
+		//Add all the bricks to the selected listID
+		this.parent.List.addElements($(element).data("listid"), this.fetchData[$(element).parents('.panel').data('list')], function() {
 
-					//Go to lists
-					_this.parent.Navigation.Go(".nav-app-list");
+			//Hide the spinner
+			$("#SavingModalSpinner").modal('hide');
 
-					//And show the list of lists
-					_this.parent.List.UI_ShowLists();
-				});
+			//Reload the main lists
+			_this.parent.List.setupMainList();
 
-			} else {
+			//Go to lists
+			_this.parent.Navigation.Go(".nav-app-list");
 
-				//Hide the spinner
-				$("#SetSearch_modalSpinner").modal('hide');
-			}
+			//And show the list of lists
+			_this.parent.List.UI_ShowLists();
 		});
 	}
 
@@ -1007,6 +1064,9 @@ PBHelper.prototype.SetSearch = function() {
 
 		//For the save list
 		$(t).data('list', i);
+
+		//Setup the setupWholeListAddButton
+		this.parent.List.setupWholeListAddButton(t, "App.SetSearch.Save");
 
 		//Append to the source
 		$(t).appendTo($(this.UI.Main).find(this.UI.SetPlaceholder));
@@ -1660,6 +1720,39 @@ PBHelper.prototype.List = function() {
 		});
 	}
 
+	this.List.Save_createNewList = function(listName, Asset, parts) {
+
+		//Keep this safe
+		var _this = this;
+
+		this.CreateList( listName, Asset, function (success, newListID) {
+
+			if (success) {
+
+				//Add all the bricks to the selected listID
+				_this.addElements(newListID, parts, function() {
+
+					//Hide the spinner
+					$("#SavingModalSpinner").modal('hide');
+
+					//Reload the main lists
+					_this.setupMainList();
+
+					//Go to lists
+					_this.parent.Navigation.Go(".nav-app-list");
+
+					//And show the list of lists
+					_this.UI_ShowLists();
+				});
+
+			} else {
+
+				//Hide the spinner
+				$("#SavingModalSpinner").modal('hide');
+			}
+		});
+	}
+
 	this.List.CreateList = function(listName, listAsset, callback) {
 
 		//Preserve this
@@ -1919,6 +2012,30 @@ PBHelper.prototype.List = function() {
 		//Setup the current one
 		$(destination).find(".btn-select > span.txt").html(this.lists[i].getProperty('name'));
 		$(destination).data('listid', i);
+	}
+
+	this.List.setupWholeListAddButton = function(destination, func) {
+
+		//Ref. for the idea of the dropdown:
+		//http://www.bootply.com/9CvIygzob8
+
+		//If there's no list, we hide the destination and quit
+		if (Object.keys(this.lists).length == 0) {
+			$(destination).find(".divider").hide();
+			return;
+		}
+
+		//Cleanup the old stuff
+		$(destination).find(".listElement").remove();
+		$(destination).find(".divider").show();
+
+		//Keep this safe
+		var _this = this;
+
+		//Do something for each list
+		for (var i in this.lists) {
+			$(destination).find(".dropdown-menu").append('<li class="listElement"><a href="javascript:void(0);" onclick="'+func+'(this)" data-listid="' + i + '">' + this.lists[i].getProperty('name') + '</a></li>');
+		}
 	}
 
 	this.List.addElement = function(listID, brick) {

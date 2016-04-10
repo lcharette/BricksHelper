@@ -36,7 +36,7 @@
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
 
 		<!-- Split add button -->
-		{% include wholeListAddButton.html param="App.LDDUpload.Save" %}
+		{% include wholeListAddButton.html param="App.LDDUpload" %}
 
 		<!-- Sort button -->
 		{% include sort.html param="App.LDDUpload.SortTable" class="pull-right" %}
@@ -57,8 +57,6 @@
 		<tfoot></tfoot>
 	</table>
 </div>
-
-{% include savingSpinner.html id="LDDUpload_modalSpinner" %}
 
 <div class="hidden">
 	<table id="LDDtemplateTable">

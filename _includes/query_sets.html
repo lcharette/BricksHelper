@@ -52,7 +52,7 @@
 				</div>
 				<div class="row" style="margin-top: 10px;">
 					<!-- Split add button -->
-					{% include wholeListAddButton.html param="App.SetSearch.Save" %}
+					{% include wholeListAddButton.html param="App.SetSearch" %}
 
 					<!-- Sort button -->
 					{% include sort.html param="App.SetSearch.SortTable" class="pull-right" %}
@@ -75,5 +75,3 @@
 
 	<div class="alert alert-danger" role="alert" id="setNotFound"><span class="glyphicon glyphicon-exclamation-sign"></span> <span class="txt"></span></div>
 </div>
-
-{% include savingSpinner.html id="SetSearch_modalSpinner" %}
