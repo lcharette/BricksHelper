@@ -80,7 +80,7 @@ $session = new session();
 			if ($session->user['logged_in']) {
 				returnPage(array(
 					'errorCode' => 407,
-					'errorDetail' => "Already logged",
+					'errorDetail' => "Already logged in",
 				));
 			}
 
