@@ -14,6 +14,11 @@ layout: default
 		  <li role="presentation" class="nav-app-bricks"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-bricks"><i class="fa fa-puzzle-piece"></i> Search by bricks</a></li>
 		  <li role="presentation" class="nav-app-list"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-list"><i class="fa fa-list"></i> My lists</a></li>
 		</ul>
+		<br />
+		<div class="form-group">
+			<h3 class="totalFit"><small>Select country</small></h3>
+			{% include county_list.html %}
+		</div>
 	</div>
 
 	<div class="col-md-9">
