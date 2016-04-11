@@ -17,3 +17,5 @@ EurobricksLink : "http://www.eurobricks.com/forum/index.php?showtopic=121587&#en
 
 # Build settings
 markdown: kramdown
+
+exclude: README.md
