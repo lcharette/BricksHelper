@@ -1449,7 +1449,8 @@ PBHelper.prototype.List = function() {
 		"ListDetail" 	: ".listContentPlaceholder",
 		"PartsTableSource"	: "#LDDtemplateTable",
 		"Progress"			: "#analyseList_progress",
-		"listPrevious"		: ".listPrevious"
+		"listPrevious"		: ".listPrevious",
+		"manageUserPannel"	: ".manageUserPannel"
 	};
 
 	/*
@@ -2201,6 +2202,42 @@ PBHelper.prototype.List = function() {
 		});
 	}
 
+	this.List.deleteUser = function(confirm) {
+		//Keep this safe
+		var _this = this;
+
+		//Ask the question
+		bootbox.confirm({
+			title: "Delete account?",
+			message: "Are you sure you want to delete your account? <strong>All your bricks lists will be permanently destroyed</strong>!!! This action cannot be canceled!",
+			buttons: {
+		        'cancel': {
+		            label: 'Cancel',
+		            className: 'btn-default pull-left'
+		        },
+		        'confirm': {
+		            label: 'Delete account',
+		            className: 'btn-danger pull-right'
+		        }
+		    },
+		    callback: function(result) {
+				if (result) {
+
+			  		//Going for php
+					$.post( _this.parent.users_base_url + "?action=deleteAccount", function( reponse ) {
+
+						//This will ned need to be replace somehere else...
+						_this.parent.handleError(reponse);
+
+						//Reload the list
+						_this.LoadUsers();
+
+					}, 'json');
+			  	}
+			}
+		});
+	}
+
 	 /*
 	 * UI Functions
 	 */
@@ -2212,6 +2249,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
 		$(this.UI.Main).find(this.UI.listCreateForm).hide();
+		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 	}
 
 	//This function shows the Registration HTML element
@@ -2221,6 +2259,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).show();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
 		$(this.UI.Main).find(this.UI.listCreateForm).hide();
+		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 	}
 
 	//This function shows the login HTML element
@@ -2230,6 +2269,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
 		$(this.UI.Main).find(this.UI.listCreateForm).hide();
+		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 
 		if (successMsg) {
 			$(this.UI.Main).find(this.UI.Login).find(".alert-success").show();
@@ -2246,6 +2286,7 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).show();
 		$(this.UI.Main).find(this.UI.listCreateForm).show();
+		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 	}
 
 	//This list show the list HTML
@@ -2254,6 +2295,17 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).show();			//Show the list
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listCreateForm).show(); //Show the create list
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listPrevious).hide();	//Hide the previous button
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.manageUserPannel).hide(); //The manage user pannel
+	}
+
+	//This list show the list HTML
+	this.List.UI_ShowUserManager = function() {
+		$(this.UI.Main).find(this.UI.Spinner).hide();
+		$(this.UI.Main).find(this.UI.Login).hide();
+		$(this.UI.Main).find(this.UI.Register).hide();
+		$(this.UI.Main).find(this.UI.Mainlist).hide();
+		$(this.UI.Main).find(this.UI.listCreateForm).hide();
+		$(this.UI.Main).find(this.UI.manageUserPannel).show();
 	}
 
 	//This function reset the parts table

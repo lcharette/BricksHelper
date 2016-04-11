@@ -58,14 +58,16 @@ label > small {
 
 @media screen and (min-width: 600px) {
 	.nav-app-list > .loginPanel,
-	.nav-app-list > .registerPanel {
+	.nav-app-list > .registerPanel,
+	.nav-app-list > .manageUserPannel {
 		width: 70%;
 		margin-left: 15%;
 	}
 }
 
 .nav-app-list > .loginPanel > .content,
-.nav-app-list > .registerPanel > .content {
+.nav-app-list > .registerPanel > .content,
+.nav-app-list > .manageUserPannel > .content {
 	padding: 25px;
 }
 

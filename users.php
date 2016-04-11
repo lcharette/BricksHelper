@@ -156,6 +156,22 @@ $session = new session();
 
 		break;
 
+		//! DELETE ACCOUNT
+		case 'deleteAccount':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'errorDetail' => "Not logged in",
+				));
+			}
+
+			//Do it. Use the userID again for additionnal security
+			$MySQL->delete("users", array("user_id" => $session->user['data']['user_id']));
+
+		//no break
+
 		//! LOGOUT
 		case 'logout':
 
