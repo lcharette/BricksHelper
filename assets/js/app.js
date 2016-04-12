@@ -10,6 +10,7 @@ function PBHelper (options) {
 	this.country = "";
 	this.LEGOBaseURL = "https://mi-od-live-s.legocdn.com";
 	this.AjaxTimeout = 15; //In seconds
+	this.username = "";
 
 	//SETUP 1° : We validate some options params
 	if (this.options.LLDUpload_interface == "") {
@@ -1489,7 +1490,7 @@ PBHelper.prototype.List = function() {
 		}, function( data ) {
 
 			//This will ned need to be replace somehere else...
-			_this.parent.handleError(data);
+			_this.parent.handleError(data, true);
 
 			//Enabled buttons
 			$(_this.UI.Main).find(_this.UI.Login).find(".btn").removeAttr('disabled');
@@ -1549,7 +1550,7 @@ PBHelper.prototype.List = function() {
 		}, function( data ) {
 
 			//This will ned need to be replace somehere else...
-			_this.parent.handleError(data);
+			_this.parent.handleError(data, true);
 
 			//Enabled buttons
 			$(_this.UI.Main).find(_this.UI.Register).find(".btn").removeAttr('disabled');
@@ -1564,6 +1565,162 @@ PBHelper.prototype.List = function() {
 			}
 		}, 'json');
 	 }
+
+	//This function take care of (*snif*) deleting users
+	this.List.deleteUser = function(confirm) {
+		//Keep this safe
+		var _this = this;
+
+		//Ask the question
+		bootbox.confirm({
+			title: "Delete account?",
+			message: "Are you sure you want to delete your account? <strong>All your bricks lists will be permanently destroyed</strong>!!! This action cannot be canceled!",
+			buttons: {
+		        'cancel': {
+		            label: 'Cancel',
+		            className: 'btn-default pull-left'
+		        },
+		        'confirm': {
+		            label: 'Delete account',
+		            className: 'btn-danger pull-right'
+		        }
+		    },
+		    callback: function(result) {
+				if (result) {
+
+			  		//Going for php
+					$.post( _this.parent.users_base_url + "?action=deleteAccount", function( reponse ) {
+
+						//This will ned need to be replace somehere else...
+						_this.parent.handleError(reponse);
+
+						//Reload the list
+						_this.LoadUsers();
+
+					}, 'json');
+			  	}
+			}
+		});
+	}
+
+	//This function takes care of the Logout procedure
+	this.List.editUserDetail = function(action, formElement) {
+
+		//Hide error & success dialog
+		$(formElement).find(".alert-danger").hide();
+		$(formElement).find(".alert-success").hide();
+
+		//Var for later use
+		var errorMsg = "";
+
+		//Disable buttons
+		$(formElement).find(".btn").attr('disabled', 'disabled');
+
+		//Little trick to use the same function for many purpose
+		switch (action) {
+			case 'username':
+
+				//Get all the data
+				var name = $(formElement).find('[name="name"]').val();
+
+				//Check for errors
+				if (name.length == 0) {
+					errorMsg = "Please fill in all the fields";
+				}
+
+				//The post Data
+				var postData = {
+					'name': name
+				};
+
+			break;
+			case 'password':
+
+				//Get all the data
+				var pass0 = $(formElement).find('[name="password0"]').val();
+				var pass1 = $(formElement).find('[name="password1"]').val();
+				var pass2 = $(formElement).find('[name="password2"]').val();
+
+				//Check for errors
+				if (pass0.length == 0 || pass1.length == 0 || pass2.length == 0) {
+					errorMsg = "Please fill in all the fields";
+				}
+
+				//Check if the two password are the same
+				if (pass1 != pass2) {
+					errorMsg = "The two password are not the same";
+				}
+
+				//The post Data
+				var postData = {
+					'pass0': pass0,
+					'pass1': pass1,
+					'pass2': pass2
+				};
+
+			break;
+			default:
+				throw new Error("editUserDetail function: No Actions");
+			break;
+		}
+
+		//Take care of errors
+		if (errorMsg != "") {
+			$(formElement).find(".alert-danger").show();
+			$(formElement).find(".alert-danger > span").html(errorMsg);
+			$(formElement).find(".btn").removeAttr('disabled');
+			return false;
+		}
+
+		//We keep this safe
+		var _this = this;
+
+		//Send to PHP
+		$.post( this.parent.users_base_url + "?action=editUser", $.extend({'formAction': action}, postData), function( data ) {
+
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(data, true);
+
+			//Enabled buttons
+			$(formElement).find(".btn").removeAttr('disabled');
+
+			//Process data
+			if (!data.success) {
+
+				$(formElement).find(".alert-danger").show();
+				$(formElement).find(".alert-danger > span").html(data.errorDetail);
+
+			} else {
+
+				$(formElement).find(".alert-success").show();
+				$(formElement).find(".alert-success > span").html("Saved successfully !");
+
+				//If name, we need to setup one more thing 
+				if (action == "username") {
+					$(_this.UI.Main).find(_this.UI.Mainlist).find("h3 span").html(name);
+					_this.parent.username = name;
+				}
+			}
+
+		}, 'json');
+	}
+
+	//This function takes care of the Logout procedure
+	this.List.Logout = function() {
+
+		//We keep this secured
+		var _this = this;
+
+		//We get user data
+		$.post( this.parent.users_base_url + "?action=logout", function( reponse ) {
+
+			//This will ned need to be replace somehere else...
+			_this.parent.handleError(reponse);
+
+			//Reload the list
+			_this.LoadUsers();
+		}, 'json');
+	}
 
 	//This function takes care of loading the user info and his lists from PHP
 	this.List.LoadUsers = function() {
@@ -1593,6 +1750,9 @@ PBHelper.prototype.List = function() {
 				//Display the username
 				//Setup the pannel header
 				$(_this.UI.Main).find(_this.UI.Mainlist).find("h3 span").html(reponse.data.userdata.username);
+
+				//Save the username for later
+				_this.parent.username = reponse.data.userdata.username;
 
 				//Setup the main list of lists. The lists are already in 'this'
 				_this.setupMainList();
@@ -1646,23 +1806,6 @@ PBHelper.prototype.List = function() {
 
 			});
 		});
-	}
-
-	//This function takes care of the Logout procedure
-	this.List.Logout = function() {
-
-		//We keep this secured
-		var _this = this;
-
-		//We get user data
-		$.post( this.parent.users_base_url + "?action=logout", function( reponse ) {
-
-			//This will ned need to be replace somehere else...
-			_this.parent.handleError(reponse);
-
-			//Reload the list
-			_this.LoadUsers();
-		}, 'json');
 	}
 
 	//This function takes care of analysing the lists and displaying the list of the lists
@@ -2202,42 +2345,6 @@ PBHelper.prototype.List = function() {
 		});
 	}
 
-	this.List.deleteUser = function(confirm) {
-		//Keep this safe
-		var _this = this;
-
-		//Ask the question
-		bootbox.confirm({
-			title: "Delete account?",
-			message: "Are you sure you want to delete your account? <strong>All your bricks lists will be permanently destroyed</strong>!!! This action cannot be canceled!",
-			buttons: {
-		        'cancel': {
-		            label: 'Cancel',
-		            className: 'btn-default pull-left'
-		        },
-		        'confirm': {
-		            label: 'Delete account',
-		            className: 'btn-danger pull-right'
-		        }
-		    },
-		    callback: function(result) {
-				if (result) {
-
-			  		//Going for php
-					$.post( _this.parent.users_base_url + "?action=deleteAccount", function( reponse ) {
-
-						//This will ned need to be replace somehere else...
-						_this.parent.handleError(reponse);
-
-						//Reload the list
-						_this.LoadUsers();
-
-					}, 'json');
-			  	}
-			}
-		});
-	}
-
 	 /*
 	 * UI Functions
 	 */
@@ -2249,7 +2356,6 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
 		$(this.UI.Main).find(this.UI.listCreateForm).hide();
-		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 	}
 
 	//This function shows the Registration HTML element
@@ -2259,7 +2365,6 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).show();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
 		$(this.UI.Main).find(this.UI.listCreateForm).hide();
-		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 	}
 
 	//This function shows the login HTML element
@@ -2269,7 +2374,6 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).hide();
 		$(this.UI.Main).find(this.UI.listCreateForm).hide();
-		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 
 		if (successMsg) {
 			$(this.UI.Main).find(this.UI.Login).find(".alert-success").show();
@@ -2286,7 +2390,6 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Register).hide();
 		$(this.UI.Main).find(this.UI.Mainlist).show();
 		$(this.UI.Main).find(this.UI.listCreateForm).show();
-		$(this.UI.Main).find(this.UI.manageUserPannel).hide();
 	}
 
 	//This list show the list HTML
@@ -2300,12 +2403,14 @@ PBHelper.prototype.List = function() {
 
 	//This list show the list HTML
 	this.List.UI_ShowUserManager = function() {
-		$(this.UI.Main).find(this.UI.Spinner).hide();
-		$(this.UI.Main).find(this.UI.Login).hide();
-		$(this.UI.Main).find(this.UI.Register).hide();
-		$(this.UI.Main).find(this.UI.Mainlist).hide();
-		$(this.UI.Main).find(this.UI.listCreateForm).hide();
-		$(this.UI.Main).find(this.UI.manageUserPannel).show();
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.ListDetail).hide();		//Hide the List Detail
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.Lists).hide();			//Show the list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listCreateForm).hide(); //Show the create list
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listPrevious).show();	//Hide the previous button
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.manageUserPannel).show(); //The manage user pannel
+
+		//Setup the username for convinience
+		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.manageUserPannel).find('[name="name"]').val(this.parent.username);
 	}
 
 	//This function reset the parts table

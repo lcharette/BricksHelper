@@ -26,6 +26,53 @@
 	<br clear="all" /><br />
 
 	<div class="listsPlaceholder"></div>
+
+	<div class="manageUserPannel" style="display: none;">
+		<div class="panel panel-default panel-primary">
+		  <div class="panel-heading">Edit username</div>
+		  <div class="panel-body">
+			  <form action="javascript:void(0);" onsubmit="App.List.editUserDetail('username', this)">
+			  <div class="form-group">
+			    <label for="registerName">Your name</label>
+			    <input type="text" class="form-control" id="registerName" name="name" placeholder="Your name" maxlength="200">
+			  </div>
+			  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+			  <div class="alert alert-success" role="alert" style="display: none;"><i class="fa fa-check-circle"></i> <span></span></div>
+			  <button type="submit" class="btn btn-primary btn-block">Save</button>
+			  </form>
+		  </div>
+		</div>
+		<div class="panel panel-default panel-primary">
+		  <div class="panel-heading">Change password</div>
+		  <div class="panel-body">
+			  <form action="javascript:void(0);" onsubmit="App.List.editUserDetail('password', this)">
+			  <div class="form-group">
+			    <label for="oldPassword">Old password</label>
+			    <input type="password" class="form-control" id="oldPassword" name="password0" placeholder="Old Password">
+			  </div>
+			  <div class="form-group">
+			    <label for="newPassword">New password</label>
+			    <input type="password" class="form-control" id="newPassword" name="password1" placeholder="New password">
+			  </div>
+			  <div class="form-group">
+			    <label for="newPassword1">Confirm new password</label>
+			    <input type="password" class="form-control" id="newPassword1" name="password2" placeholder="Confirm new password">
+			  </div>
+			  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+			  <div class="alert alert-success" role="alert" style="display: none;"><i class="fa fa-check-circle"></i> <span></span></div>
+			  <button type="submit" class="btn btn-primary btn-block">Save</button>
+			  </form>
+		  </div>
+		</div>
+		<div class="panel panel-default panel-primary">
+		  <div class="panel-heading">Delete account</div>
+		  <div class="panel-body">
+			  <button type="button" class="btn btn-danger btn-block" onclick="App.List.deleteUser()">Delete account</button>
+		  </div>
+		</div>
+	</div>
+
+	<!-- HIDDEN PLACEHOLDER -->
 	<div class="panel panel-primary listContentPlaceholder" style="display: none;">
 		<!-- Default panel contents -->
 		<div class="panel-heading"></div>
@@ -97,7 +144,6 @@
 <script>
 $('form#loginForm').on('submit',function(e){
     e.preventDefault();
-    console.log(e);
     App.List.Login( $('form#loginForm') );
 });
 </script>
@@ -129,34 +175,6 @@ $('form#loginForm').on('submit',function(e){
   </div>
 </div>
 
-<div class="panel panel-default panel-primary manageUserPannel" style="display: none;">
-  <div class="panel-heading">Manage your account</div>
-  <div class="content">
-	  <form action="javascript:void(0);" onsubmit="App.List.manageUser(this)">
-	  <div class="form-group">
-	    <label for="registerName">Your name</label>
-	    <input type="text" class="form-control" id="registerName" name="name" placeholder="Your name" maxlength="200">
-	  </div>
-	  <div class="form-group">
-	    <label for="oldPassword">Old password</label>
-	    <input type="password" class="form-control" id="oldPassword" name="password0" placeholder="Old Password">
-	  </div>
-	  <div class="form-group">
-	    <label for="newPassword">New password</label>
-	    <input type="password" class="form-control" id="newPassword" name="password1" placeholder="New password">
-	  </div>
-	  <div class="form-group">
-	    <label for="newPassword1">Confirm new password</label>
-	    <input type="password" class="form-control" id="newPassword1" name="password2" placeholder="Confirm new password">
-	  </div>
-	  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
-	  <button type="button" class="btn btn-default btn-block" onclick="App.List.UI_ShowMain()">Cancel</button>
-	  <button type="submit" class="btn btn-primary btn-lg btn-block">Save</button>
-	  <hr />
-	  <button type="button" class="btn btn-danger btn-block" onclick="App.List.deleteUser()">Delete account</button>
-	  </form>
-  </div>
-</div>
 
 <div class="hidden" id="list_template">
 	<a id="listElementTemplate" href="javascript:void(0)" onclick="App.List.showList(this)">

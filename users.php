@@ -156,6 +156,90 @@ $session = new session();
 
 		break;
 
+		//! EDIT USER
+		case 'editUser':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'errorDetail' => "Not logged in",
+				));
+			}
+
+			//Get the action
+			$formAction = request_var('formAction', '');
+
+			switch($formAction) {
+				case 'username':
+
+					//Get the var
+					$name = request_var('name', '');
+
+					//Make sure it's not empty
+					if ($name == "") {
+						returnPage(array(
+							'errorCode' => 402,
+							'errorDetail' => "Missing param",
+						));
+					}
+
+					//Update MySQL
+					$MySQL->update("users", array('username' => $name), array("user_id" => $session->user['data']['user_id']));
+
+				break;
+
+				case 'password':
+
+					//Get the var
+					$pass0 = request_var('pass0', '');
+					$pass1 = request_var('pass1', '');
+					$pass2 = request_var('pass2', '');
+
+					//Make sure it's not empty
+					if ($pass0 == "" || $pass1 == "" || $pass2 == "") {
+						returnPage(array(
+							'errorCode' => 402,
+							'errorDetail' => "Missing param",
+						));
+					}
+
+					//Check if the two password are the same
+					if ($pass1 != $pass2) {
+						returnPage(array(
+							'errorCode' => 403,
+							'errorDetail' => "Pass mismatch param",
+						));
+					}
+
+					//Check the old password
+					$ligne = $MySQL->select_one('users', 'password', array('user_id' => $session->user['data']['user_id']));
+
+					if (crypt(md5($pass0), $ligne['password']) != $ligne['password']) {
+						returnPage(array(
+							'errorCode' => 412,
+							'errorDetail' => "Old password mismatch",
+						));
+					}
+
+					//We can now do it
+					$MySQL->update("users", array('password' => crypt(md5($pass1)) ), array("user_id" => $session->user['data']['user_id']));
+
+				break;
+
+				default:
+					returnPage(array(
+						'errorCode' => 413,
+						'errorDetail' => "No Form Action",
+					));
+				break;
+			}
+
+			//Return everything
+			returnPage(array('success' 	=> true));
+
+		break;
+
 		//! DELETE ACCOUNT
 		case 'deleteAccount':
 
