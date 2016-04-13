@@ -4,6 +4,14 @@ title: Changelog
 permalink: /changelog/
 ---
 
+### April 12th 2016
+"Version 1.0"
+* Added custom lists features
+* Fix mobile UI
+* Fix Safari not remembering your password
+* Moved contry selector to a single, global one.
+* Etc.
+
 ### March 27th 2016
 * Fix color associations
 
@@ -29,16 +37,28 @@ permalink: /changelog/
 ### February 13th 2016
 * Initial release
 
-# Features wishlist
-* Multilanguages support
-* Cutom list on the site / Edit list / Search for replacement / save list for later
+***
+
+# Things to fix (need to do)
+* Renaming lists
+* Add "forgot password?" form
+* Fix for UI when loging out and relogging
+* Add visual feedback when adding a brick to a list
+* Improve error management
+* Optimize cache system
+* Copy list. Merge list. Add part from one list to another
+* Display store quantity
+* Edit list image
+
+
+# Features wishlist (nice to have)
 * Excel / CVS export
+* Share list option
+* Public / general lists gallery
+* Multilanguages support
 * Send list to B&P basket
 * Rebrickable/Brickset/other (MOC) import
-* Alternative parts suggestion (from rebrickable, other)
-* Alternative parts suggestion (from cache, user input)
-* Option "exclude unavaiable parts"
-* Advance search (Set, bricks, color, etc in the same query)
-* Caching system (to ease up on source server)
+* Alternative or similar parts suggestion (from rebrickable, cache, other)
+* Caching system for parts value
 * Pick-a-Brick support
 * Etc.
