@@ -15,16 +15,6 @@ Requires:
 	nano config.mysql.php
 	```
 
-1. Install Composer:
-	```
-	php composer.phar install
-	```
-
-1. Run Phinx:
-	```
-	
-	```
-
 ##Jekyll part
 1. Build the site
 	```
