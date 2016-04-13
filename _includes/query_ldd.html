@@ -6,6 +6,12 @@
 
 <div class="progress" id="LDDUpload_progress" style="display: none;">
   <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+  <div class="progress-bar-label">Uploading file</div>
+</div>
+
+<div class="progress" id="analyseLDD_progress" style="display: none; margin-top: 20px;">
+  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+  <div class="progress-bar-label">Searching brick <span class="current"></span> of <span class="totalnb"></span></div>
 </div>
 
 <div class="alert alert-danger" role="alert" style="display: none; margin-top: 15px;" id="LDDUpload_error">
@@ -19,51 +25,21 @@
 	<div class="panel-body">
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-2"><img class="pull-left setImg" src="" alt="Set image"></div>
+				<div class="col-md-2" style="text-align: center"><img class="pull-left setImg" src="" alt="Set image"></div>
 				<div class="col-md-10">
-					<p>Total number of bricks found: <span class="setNbPieces"></span></p>
-					<p>Number of unique element found: <span class="setNbUniqueElements"></span></p>
+					<p class="nbPieces">Number of pieces: <span></span></p>
+					<p class="nbElements">Number of unique elements: <span></span></p>
 				</div>
 			</div>
 		</div>
-		<div class="form-group">
-			<label for="setNumber">Select country</label>
-			{% include county_list.html %}
-		</div>
+		<hr />
 		<button class="btn btn-danger btn-deleteLDD" onclick="cancelLDDUpload();"><i class="fa fa-trash-o"></i> Remove</button>
-		<button class="btn btn-default btn-previewLDD" onclick="App.LDDUpload.Preview();"><i class="fa fa-eye"></i> Preview parts found</button>
-		<button class="btn btn-primary btn-analyseLDD" onclick="App.LDDUpload.Analyse();"><i class="fa fa-search"></i> Find model value</button>
+
+		<!-- Split add button -->
+		{% include wholeListAddButton.html param="App.LDDUpload" %}
+
 		<!-- Sort button -->
-		<div class="btn-group pull-right">
-		  <button type="button" class="btn btn-default dropdown-toggle btn-sortLDD" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		    <i class="fa fa-filter"></i> <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu">
-			<li class="dropdown-header">Sort by:</li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("price", "ASC")'>Price (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("price", "DESC")'>Price (high to low)</a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("total", "ASC")'>Total price (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("total", "DESC")'>Total Price (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("designid", "ASC")'>Design ID (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("designid", "DESC")'>Design ID (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("elementid", "ASC")'>Element number (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("elementid", "DESC")'>Element number (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("qte", "ASC")'>Quantity (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("qte", "DESC")'>Quantity (high to low)</a></a></li>
-
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("color", "ASC")'>Color (low to high)</a></li>
-		    <li><a href="javascript:void(0);" onclick='App.LDDUpload.SortTable("color", "DESC")'>Color (high to low)</a></a></li>
-		  </ul>
-		</div>
-
-		<div class="progress" id="analyseLDD_progress" style="display: none; margin-top: 20px;">
-		  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
-		  <div class="progress-bar-label">Searching element <span class="current"></span> of <span class="totalnb"></span></div>
-		</div>
+		{% include sort.html param="App.LDDUpload.SortTable" class="pull-right" %}
 	</div>
 
 	<!-- Table -->
@@ -90,9 +66,10 @@
 				Element: <a class="elementID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
 				Design ID: <a class="desingID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
 				Part name: <span class="desc"></span><br />
-				Color: <span class="color"></span>
+				Color: <span class="color"></span><br />
+				{% include listAddButton.html %}
 			</td>
-			<td class="qte v-align-middle" align="center"></td>
+			<td class="qte v-align-middle" align="center"><span></span></td>
 			<td class="price v-align-middle" align="center"></td>
 			<td class="priceTotal v-align-middle" align="center"></td>
 		</tr>
@@ -155,6 +132,9 @@
 				App.LDDUpload.processLDDData(data, file.name);
 			}
 		});
+
+		// Disable auto discover for all elements:
+		Dropzone.autoDiscover = false;
 	})
 
 
@@ -163,16 +143,10 @@
 		$("#LDDUpload_dropzone").show();
 
 		//Reset some app stuff
-		App.LDDUpload.resetVars();
+		//App.LDDUpload.resetVars();
 		App.LDDUpload.UI_resetLDDPannel();
 
 		//Reset the upload progress
 		$("#LDDUpload_progress > div").css("width", "0%");
 	}
-</script>
-
-<script src="assets/js/dropzone.js"></script>
-<script>
-	// Disable auto discover for all elements:
-	Dropzone.autoDiscover = false;
 </script>

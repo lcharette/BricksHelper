@@ -1,0 +1,9 @@
+<?php
+//Configuration MySQL
+$DBhost = "localhost";	// Serveur (localhost par default)
+$DBuser = "";			// Nom utilisateur de la DB
+$DBpass = "";			// Password DB
+$DBName = "";			// Nom de la DB
+$DBprfx = "LEGO_";		// Préfixe des tables
+
+?>

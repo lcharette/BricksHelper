@@ -12,13 +12,20 @@ layout: default
 		  <li role="presentation" class="active nav-app-ldd"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-ldd"><i class="fa fa-cloud-upload"></i> LDD import</a></li>
 		  <li role="presentation" class="nav-app-sets"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-sets"><i class="fa fa-archive"></i> Search by sets</a></li>
 		  <li role="presentation" class="nav-app-bricks"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-bricks"><i class="fa fa-puzzle-piece"></i> Search by bricks</a></li>
+		  <li role="presentation" class="nav-app-list"><a href="#" onclick="App.Navigation.MenuSelect(this);" data-target="nav-app-list"><i class="fa fa-list"></i> My lists</a></li>
 		</ul>
+		<br />
+		<div class="form-group">
+			<h3 class="totalFit"><small>Select country</small></h3>
+			{% include county_list.html %}
+		</div>
 	</div>
 
 	<div class="col-md-9">
 		<div class="nav-app-ldd">{% include query_ldd.html %}</div>
 		<div class="nav-app-sets" style="display: none">{% include query_sets.html %}</div>
 		<div class="nav-app-bricks" style="display: none">{% include query_bricks.html %}</div>
+		<div class="nav-app-list" style="display: none">{% include query_list.html %}</div>
 	</div>
 </div>
 
@@ -30,13 +37,22 @@ layout: default
 	</div>
 </div>
 
+<div class="modal fade" id="SavingModalSpinner" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content" style="text-align: center">
+		<div class="modal-body"><h2 class="totalFit">Saving <i class="fa fa-spinner fa-spin"></i></h2></div>
+    </div>
+  </div>
+</div>
+
 <script>
 	var App;
 	$( document ).ready(function() {
 		App = new PBHelper ({
 			"LLDUpload_interface" : ".nav-app-ldd",
 			"SetSearch_interface" : ".nav-app-sets",
-			"BrickSearch_interface" : ".nav-app-bricks"
+			"BrickSearch_interface" : ".nav-app-bricks",
+			"List_interface" : ".nav-app-list"
 		});
 	});
 </script>

@@ -1,0 +1,222 @@
+<h1 class="fit"><small>My lists</small></h1>
+
+<div class="mainlist" style="display: none;">
+	<h3 style="border-bottom: 1px solid lightgray; padding-bottom: 5px;">
+		<small>
+			Welcome <span></span>!
+			<div class="dropdown pull-right">
+			  <button class="btn btn-default btn-xs dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    <i class="fa fa-cog"></i>
+			  </button>
+			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+			    <li><a href="javascript:void(0);" onclick="App.List.UI_ShowUserManager()">Manage account</a></li>
+			    <li><a href="javascript:void(0);" onclick="App.List.Logout()">Logout</a></li>
+			  </ul>
+			</div>
+		</small>
+	</h3>
+
+	<div class="pull-left listPrevious" style="display: none;">
+		<button class="btn btn-default" onclick="App.List.UI_ShowLists()"><i class="fa fa-chevron-left"></i> Back</button>
+	</div>
+
+	<div class="pull-right listCreateForm">
+		<button class="btn btn-success" onclick="App.List.getNewListName()"><i class="fa fa-plus"></i> Create new list</button>
+	</div>
+	<br clear="all" /><br />
+
+	<div class="listsPlaceholder"></div>
+
+	<div class="manageUserPannel" style="display: none;">
+		<div class="panel panel-default panel-primary">
+		  <div class="panel-heading">Edit username</div>
+		  <div class="panel-body">
+			  <form action="javascript:void(0);" onsubmit="App.List.editUserDetail('username', this)">
+			  <div class="form-group">
+			    <label for="registerName">Your name</label>
+			    <input type="text" class="form-control" id="registerName" name="name" placeholder="Your name" maxlength="200">
+			  </div>
+			  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+			  <div class="alert alert-success" role="alert" style="display: none;"><i class="fa fa-check-circle"></i> <span></span></div>
+			  <button type="submit" class="btn btn-primary btn-block">Save</button>
+			  </form>
+		  </div>
+		</div>
+		<div class="panel panel-default panel-primary">
+		  <div class="panel-heading">Change password</div>
+		  <div class="panel-body">
+			  <form action="javascript:void(0);" onsubmit="App.List.editUserDetail('password', this)">
+			  <div class="form-group">
+			    <label for="oldPassword">Old password</label>
+			    <input type="password" class="form-control" id="oldPassword" name="password0" placeholder="Old Password">
+			  </div>
+			  <div class="form-group">
+			    <label for="newPassword">New password</label>
+			    <input type="password" class="form-control" id="newPassword" name="password1" placeholder="New password">
+			  </div>
+			  <div class="form-group">
+			    <label for="newPassword1">Confirm new password</label>
+			    <input type="password" class="form-control" id="newPassword1" name="password2" placeholder="Confirm new password">
+			  </div>
+			  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+			  <div class="alert alert-success" role="alert" style="display: none;"><i class="fa fa-check-circle"></i> <span></span></div>
+			  <button type="submit" class="btn btn-primary btn-block">Save</button>
+			  </form>
+		  </div>
+		</div>
+		<div class="panel panel-default panel-primary">
+		  <div class="panel-heading">Delete account</div>
+		  <div class="panel-body">
+			  <button type="button" class="btn btn-danger btn-block" onclick="App.List.deleteUser()">Delete account</button>
+		  </div>
+		</div>
+	</div>
+
+	<!-- HIDDEN PLACEHOLDER -->
+	<div class="panel panel-primary listContentPlaceholder" style="display: none;">
+		<!-- Default panel contents -->
+		<div class="panel-heading"></div>
+		<div class="panel-body">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-2" style="text-align: center;"><img class="setImg" src="" alt="Set image"></div>
+					<div class="col-md-10">
+						<p class="createdOn">Created on: <span></span></p>
+						<p class="nbPieces">Number of pieces: <span></span></p>
+						<p class="nbElements">Number of unique elements: <span></span></p>
+					</div>
+				</div>
+			</div>
+			<hr />
+			<button class="btn btn-danger btn-deleteLDD" onclick="App.List.deleteList();"><i class="fa fa-trash-o"></i> Delete list</button>
+			<button class="btn btn-primary btn-analyseLDD" onclick="App.List.Analyse();"><i class="fa fa-search"></i> Find value</button>
+			<!-- Sort button -->
+			{% include sort.html param="App.List.SortTable" class="pull-right" %}
+
+			<div class="progress" id="analyseList_progress" style="display: none; margin-top: 20px;">
+			  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
+			  <div class="progress-bar-label">Searching brick <span class="current"></span> of <span class="totalnb"></span></div>
+			</div>
+		</div>
+
+		<!-- Table -->
+		<table class="table table-bordered ListTable">
+			<thead>
+				<tr>
+					<th>Image</th>
+					<th>Brick info</th>
+					<th>Qte used</th>
+					<th>Unit price</th>
+					<th>Total price</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+			<tfoot></tfoot>
+		</table>
+	</div>
+</div>
+
+<div class="progressDiv">
+	<i class="fa fa-spinner fa-spin fa-3x"></i>
+</div>
+
+<div class="panel panel-default panel-primary loginPanel" style="display: none;">
+  <div class="panel-heading">Login</div>
+  <div class="content">
+	  <form action="" name="loginForm" id="loginForm" method="post">
+	  <div class="form-group">
+	    <label for="email">Email address</label>
+	    <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+	  </div>
+	  <div class="form-group">
+	    <label for="password">Password</label>
+	    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+	  </div>
+	  <div class="alert alert-success" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+	  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+	  <button type="button" class="btn btn-default btn-block" onclick="App.List.UI_ShowRegister()">Register</button>
+	  <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+	  </form>
+  </div>
+</div>
+
+<script>
+$('form#loginForm').on('submit',function(e){
+    e.preventDefault();
+    App.List.Login( $('form#loginForm') );
+});
+</script>
+
+<div class="panel panel-default panel-primary registerPanel" style="display: none;">
+  <div class="panel-heading">Register</div>
+  <div class="content">
+	  <form action="javascript:void(0);" onsubmit="App.List.Register(this)">
+	  <div class="form-group">
+	    <label for="registerName">Your name</label>
+	    <input type="text" class="form-control" id="registerName" name="name" placeholder="Your name" maxlength="200">
+	  </div>
+	  <div class="form-group">
+	    <label for="registerEmail">Email address</label>
+	    <input type="email" class="form-control" id="registerEmail" name="email" placeholder="Email" maxlength="200">
+	  </div>
+	  <div class="form-group">
+	    <label for="registerPassword">Password</label>
+	    <input type="password" class="form-control" id="registerPassword" name="password1" placeholder="Password">
+	  </div>
+	  <div class="form-group">
+	    <label for="registerPassword1">Confirm password</label>
+	    <input type="password" class="form-control" id="registerPassword1" name="password2" placeholder="Confirm password">
+	  </div>
+	  <div class="alert alert-danger" role="alert" style="display: none;"><i class="fa fa-exclamation-circle"></i> <span></span></div>
+	  <button type="button" class="btn btn-default btn-block" onclick="App.List.UI_ShowLogin()">Cancel</button>
+	  <button type="submit" class="btn btn-primary btn-lg btn-block">Register</button>
+	  </form>
+  </div>
+</div>
+
+
+<div class="hidden" id="list_template">
+	<a id="listElementTemplate" href="javascript:void(0)" onclick="App.List.showList(this)">
+		<div class="panel panel-primary">
+			<div class="panel-heading"></div>
+			<div class="panel-body">
+				<table>
+					<tr>
+						<td nowrap="nowrap" style="padding-right: 5px;"><img class="media-object" src="" alt=""></td>
+						<td width="100%">
+							<p class="createdOn">Created on: <span></span></p>
+							<p class="nbPieces">Number of pieces: <span></span></p>
+							<p class="nbElements">Number of unique elements: <span></span></p>
+						</td>
+						<td nowrap="nowrap" class="icon"><i class="fa fa-chevron-right"></i></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</a>
+</div>
+
+<div class="hidden">
+	<table id="LDDtemplateTable">
+		<tr class="templateTable_row">
+			<td class="asset v-align-middle"><img src=""></td>
+			<td class="small">
+				Element: <a class="elementID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Design ID: <a class="desingID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
+				Part name: <span class="desc"></span><br />
+				Color: <span class="color"></span>
+			</td>
+			<td class="qte v-align-middle" align="center"><span></span></td>
+			<td class="price v-align-middle" align="center"></td>
+			<td class="priceTotal v-align-middle" align="center"></td>
+			<td class="action v-align-middle" align="center">
+				<button class="btn btn-default btn-sm btn-edit"><i class="fa fa-pencil-square-o"></i></button>
+				<button class="btn btn-danger btn-sm btn-delete"><i class="fa fa-trash"></i></button>
+			</td>
+		</tr>
+		<tr class="templateTable_Totalrow">
+			<td colspan="6" align="right"><strong>Total: <span class="txtTotal"></span></strong></td>
+		</tr>
+	</table>
+</div>

@@ -51,3 +51,89 @@ i.LEGO_PartNotAvailable { color: black; }
 label > small {
 	color: grey;
 }
+
+/*
+ * My list
+ */
+
+@media screen and (min-width: 600px) {
+	.nav-app-list > .loginPanel,
+	.nav-app-list > .registerPanel {
+		width: 70%;
+		margin-left: 15%;
+	}
+}
+
+.nav-app-list > .loginPanel > .content,
+.nav-app-list > .registerPanel > .content,
+.nav-app-list > .manageUserPannel > .panel > .content {
+	padding: 25px;
+}
+
+.nav-app-list .accountGear {
+	line-height: 27px;
+	cursor: pointer;
+}
+
+.nav-app-list .open .accountGear {
+	color: black;
+}
+
+/* List table */
+
+.nav-app-list .listsPlaceholder img {
+	max-width: 50px;
+	max-height: 50px;
+}
+
+.nav-app-list .listsPlaceholder table td.icon {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.nav-app-list .listsPlaceholder p,
+.nav-app-list .listContentPlaceholder p,
+.nav-app-ldd #LDDUpload_file p {
+	margin: 0px;
+	color: black;
+	font-size: 85%;
+}
+
+.nav-app-list .listsPlaceholder a,
+.nav-app-list .listsPlaceholder a:hover,
+.nav-app-list .listsPlaceholder a:focus {
+    text-decoration: none;
+}
+
+.nav-app-list .listsPlaceholder .panel,
+.nav-app-list .manageUserPannel .panel {
+	margin-bottom: 10px;
+}
+.nav-app-list .listsPlaceholder .panel-body {
+	padding: 10px;
+}
+
+.nav-app-list .manageUserPannel .panel-body {
+	padding: 25px;
+}
+
+@media screen and (min-width: 600px) {
+	.nav-app-list .manageUserPannel .panel {
+		width: 70%;
+		margin-left: 15%;
+	}
+}
+
+.listAdd {
+    margin-top: 10px;
+}
+
+/*
+ * Text and icons color shortcut
+ */
+ .red {
+	 color: red;
+ }
+ .yellow {
+	 color: yellow;
+ }

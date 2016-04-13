@@ -3,10 +3,6 @@
 <form action="javascript:void(0);" id="setForm" onsubmit="App.SetSearch.Search()">
 
 	<div class="form-group">
-		<label for="setNumber">Select country</label>
-		{% include county_list.html %}
-	</div>
-	<div class="form-group">
 		<label for="setFormValue">Set number<br /><small>Tip: Search for multiple sets at once using a comma-separated list</small></label>
 		<input type="text" class="form-control" id="setFormValue" placeholder="Set number" value="">
 	</div>
@@ -31,7 +27,8 @@
 				Element: <a class="elementID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
 				Design ID <a class="desingID" href="#" onclick="App.BrickSearch.SearchBrickLink(this);"></a><br />
 				Part name: <span class="desc"></span><br />
-				Color: <span class="color"></span>
+				Color: <span class="color"></span><br />
+				{% include listAddButton.html %}
 			</td>
 			<td class="price v-align-middle" align="center"></td>
 		</tr>
@@ -49,6 +46,13 @@
 						<p>Number of elements found: <span class="setNbPieces"></span></p>
 					</div>
 				</div>
+				<div class="row" style="margin-top: 10px;">
+					<!-- Split add button -->
+					{% include wholeListAddButton.html param="App.SetSearch" %}
+
+					<!-- Sort button -->
+					{% include sort.html param="App.SetSearch.SortTable" class="pull-right" %}
+				</div>
 			</div>
 		</div>
 
@@ -65,5 +69,5 @@
 		</table>
 	</div>
 
-	<div class="alert alert-danger" role="alert" id="setNotFound"><span class="glyphicon glyphicon-exclamation-sign"></span> Set <span class="txt"></span> not found</div>
+	<div class="alert alert-danger" role="alert" id="setNotFound"><span class="glyphicon glyphicon-exclamation-sign"></span> <span class="txt"></span></div>
 </div>

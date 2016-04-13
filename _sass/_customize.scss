@@ -59,3 +59,28 @@ h6.totalFit {
     font-size: 18px;
     color: grey;
 }
+
+/*
+ * Modal
+ */
+
+ .modal {
+	 top: 35% !important;
+ }
+
+//Overwrite for small model in small narrow screens
+.modal-sm {
+    width: 300px !important;
+    margin: 30px auto !important;
+}
+.form-inline .form-group-sm {
+    display: inline-block;
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.form-inline .form-group-sm .form-control {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+}

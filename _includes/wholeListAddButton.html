@@ -1,0 +1,11 @@
+<div class="btn-group">
+  <button type="button" class="btn btn-success" onclick="{{include.param}}.SavetoNewList(this)"><i class="fa fa-floppy-o"></i> Save to new list</button>
+  <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <span class="caret"></span>
+    <span class="sr-only">Toggle Dropdown</span>
+  </button>
+  <ul class="dropdown-menu">
+    <li class="new"><a href="javascript:void(0)" onclick="{{include.param}}.SavetoCreateList(this)">Create new list</a></li>
+    <li role="separator" class="divider"></li>
+  </ul>
+</div>
