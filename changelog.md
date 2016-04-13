@@ -5,7 +5,7 @@ permalink: /changelog/
 ---
 
 ### April 12th 2016
-"Version 1.0"
+AKA "Version 1.0"
 * Added custom lists features
 * Fix mobile UI
 * Fix Safari not remembering your password
