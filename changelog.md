@@ -4,42 +4,41 @@ title: Changelog
 permalink: /changelog/
 ---
 
-### April 12th 2016
-AKA "Version 1.0"
-* Added custom lists features
-* Fix mobile UI
-* Fix Safari not remembering your password
-* Moved contry selector to a single, global one.
-* Etc.
+* **April 12th 2016** (AKA "Version 1.0")
+	* Added custom lists features
+	* Fix mobile UI
+	* Fix Safari not remembering your password
+	* Moved contry selector to a single, global one.
+	* Etc.
 
-### March 27th 2016
-* Fix color associations
+* **March 27th 2016**
+	* Fix color associations
 
-### March 16th 2016
-* (LDD Upload) Fix wrong total if the value is calculated twice in a row (or more) for the same model / uploaded file.
+* **March 16th 2016**
+	* (LDD Upload) Fix wrong total if the value is calculated twice in a row (or more) for the same model / uploaded file.
 
-### March 14th 2016
-* Fix country not working for set search
-* Added cookie to remember your country
-* Fix crash with empty result from LEGO website
+* **March 14th 2016**
+	* Fix country not working for set search
+	* Added cookie to remember your country
+	* Fix crash with empty result from LEGO website
 
-### March 6th 2016
-* Fix detection of bricks composed of multiple parts
-* Improved sorting
-* Fix color mismatch for Tr.Red parts
+* **March 6th 2016**
+	* Fix detection of bricks composed of multiple parts
+	* Improved sorting
+	* Fix color mismatch for Tr.Red parts
 
-### March 3rd 2016
-* Added sorting to LDD upload results
+* **March 3rd 2016**
+	* Added sorting to LDD upload results
 
-### February 15th 2016
-* Added [FAQ](/faq) page
+* **February 15th 2016**
+	* Added [FAQ](/faq) page
 
-### February 13th 2016
-* Initial release
+* **February 13th 2016**
+	* Initial release
 
 ***
 
-# Things to fix (need to do)
+## Things to fix (need to do)
 * Renaming lists
 * Add "forgot password?" form
 * Fix for UI when loging out and relogging
@@ -51,7 +50,7 @@ AKA "Version 1.0"
 * Edit list image
 
 
-# Features wishlist (nice to have)
+## Features wishlist (nice to have)
 * Excel / CVS export
 * Share list option
 * Public / general lists gallery
