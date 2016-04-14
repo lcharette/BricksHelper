@@ -2555,15 +2555,14 @@ function LegoBrickList(initData) {
 			throw new Error("Specified brick is not a valid Lego element");
 		}
 
-		//Small shortcut fot the brick ID
+		//Small shortcut for the brick ID
 		var position = this.getBrickElementPosition(lego_element.getProperty("ID"));
-
 
 		//if quantity is undefined, we set it to 1
 		if (qte == undefined) { qte = 1; }
 
 		//Check if this brick already exist in the list
-		if ( bricks[position] == undefined ) {
+		if (bricks[position] == undefined || lego_element.getProperty("ID") == 0) {
 
 			//Get the next ID
 			var i = this.getNbElements() + 1;

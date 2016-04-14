@@ -5,7 +5,8 @@ permalink: /changelog/
 ---
 
 * **April 13th 2016** 
-	* Fix a page reload when editing a brick quantity
+	* Fixed a page reload when editing a brick quantity
+	* Fixed bug with displaying part with no element ID in LDD Upload table
 
 * **April 12th 2016** (AKA "Version 1.0")
 	* Added custom lists features
