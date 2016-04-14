@@ -4,6 +4,9 @@ title: Changelog
 permalink: /changelog/
 ---
 
+* **April 13th 2016** 
+	* Fix a page reload when editing a brick quantity
+
 * **April 12th 2016** (AKA "Version 1.0")
 	* Added custom lists features
 	* Fix mobile UI
