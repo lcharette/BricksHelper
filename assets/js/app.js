@@ -344,15 +344,8 @@ function PBHelper (options) {
 	 * Setup actions
 	 */
 
-	//Initialise les prototypes
-	this.LDDUpload();
-	this.SetSearch();
-	this.BrickSearch();
-	this.List();
-	this.Navigation();
-	this.cookieHelper();
-
 	//Check the cookie to find the country
+	this.cookieHelper();
 	if ((PBH_countryCode = this.cookieHelper.get("PBH_countryCode")) != "") {
 
 		//Setup the cookied country code
@@ -363,6 +356,13 @@ function PBHelper (options) {
 		//Setup default country
 		this.setCountry("CA");
 	}
+
+	//Initialise les prototypes
+	this.LDDUpload();
+	this.SetSearch();
+	this.BrickSearch();
+	this.List();
+	this.Navigation();
 }
 
 
@@ -820,6 +820,9 @@ PBHelper.prototype.SetSearch = function() {
 		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
 		var items = itemordesignnumber.split(",");
 
+		//Edit the url hash
+		document.location.hash = "set-"+itemordesignnumber;
+
 		//Set the infos for the progress
 		var currentPart = 0;
 		this.totalSearch = items.length;
@@ -978,6 +981,23 @@ PBHelper.prototype.SetSearch = function() {
 		this.displayLists();
 	}
 
+	this.SetSearch.Share = function(element) {
+
+		//Show the link in a bootbox dialog
+
+		bootbox.dialog({
+		  message: "Use this link to share this search results!:<br /><pre contentEditable>"+ document.location.origin + "#set-" + $(element).parents('.panel').data('list') +"</pre>",
+		  title: "Share",
+		  buttons: {
+		    main: {
+		      label: "Close",
+		      className: "btn-default",
+		      callback: function() {}
+		    }
+		  }
+		});
+	}
+
 	//This function is used to save all the part found for a search query to an NEW list with a user specified name
 	this.SetSearch.SavetoCreateList = function(element) {
 
@@ -1114,6 +1134,19 @@ PBHelper.prototype.SetSearch = function() {
 	this.SetSearch.UI_Progress_done = function() {
 		$(this.UI.Main).find(this.UI.Progress).hide();
 	}
+
+	//This function force search the brick ID specified in argument
+	this.SetSearch.SearchSet = function(setId) {
+
+		//Update the form
+		$(this.UI.Main).find(this.UI.FormInput).val(setId);
+
+		//Send the search
+		this.Search();
+
+		//Show the page in navigation
+		this.parent.Navigation.Go(this.UI.Main);
+	}
 }
 
 /*
@@ -1167,6 +1200,9 @@ PBHelper.prototype.BrickSearch = function() {
 		//Get the form data
 		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
 		var items = itemordesignnumber.split(",");
+
+		//Edit the url hash
+		document.location.hash = "brick-"+itemordesignnumber;
 
 		//Set the infos for the progress
 		var currentPart = 0;
@@ -1321,6 +1357,23 @@ PBHelper.prototype.BrickSearch = function() {
 
 		//Refresh the list
 		this.displayLists();
+	}
+
+	this.BrickSearch.Share = function(element) {
+
+		//Show the link in a bootbox dialog
+
+		bootbox.dialog({
+		  message: "Use this link to share this search results!:<br /><pre contentEditable>"+ document.location.origin + "#brick-" + $(element).parents('.panel').data('list') +"</pre>",
+		  title: "Share",
+		  buttons: {
+		    main: {
+		      label: "Close",
+		      className: "btn-default",
+		      callback: function() {}
+		    }
+		  }
+		});
 	}
 
 	/*
@@ -2530,6 +2583,30 @@ PBHelper.prototype.Navigation = function() {
 
 		//Show the selected content
 		$("div"+SelectedClass).show();
+
+	}
+
+	//Since navigation is called when PBH is lunched, we can do
+	//this simple hash detection here
+	//1° Get the hash
+	var hash = window.location.hash;
+
+	//2° we use a simple format of "SearchType-SearchQuery" (For example "#brick-50746,50745") So we separate the two using the "-"
+	hash = hash.split("-", 2);
+
+	//3° Switch action. don't forget the "serachType" will always begin with the "#"
+	switch (hash[0]) {
+		case '#brick':
+		case '#bricks':
+		case '#SearchBrick':
+			this.BrickSearch.SearchBrick(hash[1]);
+		break;
+
+		case '#set':
+		case '#sets':
+		case '#SetSearch':
+			this.SetSearch.SearchSet(hash[1]);
+		break;
 
 	}
 }

@@ -6,6 +6,7 @@ permalink: /changelog/
 
 * **April 24th 2016** 
 	* Added option to rename existing lists
+	* Added share button for bricks and set search and formatted url for search query to share to search
 
 * **April 13th 2016** 
 	* Fixed a page reload when editing a brick quantity
