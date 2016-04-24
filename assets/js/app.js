@@ -1864,6 +1864,41 @@ PBHelper.prototype.List = function() {
 		});
 	}
 
+	this.List.renameList = function() {
+
+		//Preserve this
+		var _this = this;
+
+		//Call Bootbox Prompt
+		bootbox.prompt({
+		  title: "Please enter the new list name",
+		  value: this.lists[this.active].getProperty('name'),
+		  callback: function(result) {
+		    if (result != null && result != "") {
+
+		  		//Send to PHP!
+				$.post( _this.parent.users_base_url + "?action=editListName", {'listName' : result, 'listID': _this.active}, function( reponse ) {
+
+					//This will ned need to be replace somehere else...
+					_this.parent.handleError(reponse);
+
+					//Process reponse
+					if (reponse.success) {
+
+						//On doit modifier le nom dans les
+						_this.lists[_this.active].setProperty('name', result);
+
+						//On refresh les affichages
+						_this.setupMainList();
+						_this.refreshList();
+
+					}
+				}, 'json');
+		  	}
+		  }
+		});
+	}
+
 	this.List.Save_createNewList = function(listName, Asset, parts) {
 
 		//Keep this safe

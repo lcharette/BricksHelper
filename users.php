@@ -305,6 +305,49 @@ $session = new session();
 		break;
 
 		//! DELETE LIST
+		case 'editListName':
+
+			//We need to be logged in. Make sure of that and get user_id
+			if (!$session->user['logged_in']) {
+				returnPage(array(
+					'errorCode' => 408,
+					'errorDetail' => "Not logged in",
+				));
+			}
+
+			//Get the post data
+			$listID = request_var('listID', 0);
+			$listName = request_var('listName', '');
+
+			//Check for empty name
+			if ($listName == "") {
+				returnPage(array(
+					'errorCode' => 409,
+					'errorDetail' => "List name can't be blank",
+				));
+			}
+
+			//Get infos from the list. This is just make sure the list is owned by the user
+			$result = $MySQL->select_one("userlists", "*", array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			if (empty($result)) {
+				returnPage(array(
+					'errorCode' => 410,
+					'errorDetail' => "List not owned",
+				));
+			}
+
+			//Do it. Use the userID again for additionnal security
+			$MySQL->update("userlists", array('listName' => addslashes($listName)), array("user_id" => $session->user['data']['user_id'], "AND ID" => $listID));
+
+			//Retourne un succès
+			returnPage(array(
+				'success' 	=> true,
+			));
+
+		break;
+
+		//! DELETE LIST
 		case 'deleteList':
 
 			//We need to be logged in. Make sure of that and get user_id

@@ -4,6 +4,9 @@ title: Changelog
 permalink: /changelog/
 ---
 
+* **April 24th 2016** 
+	* Added option to rename existing lists
+
 * **April 13th 2016** 
 	* Fixed a page reload when editing a brick quantity
 	* Fixed bug with displaying part with no element ID in LDD Upload table
