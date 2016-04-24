@@ -218,7 +218,7 @@ var LEGO_Color = {
     Name: "Light Lime"
   },
   124: {
-    LegoID: "Br.Red-Viol",
+    LegoID: "BR.RED-VIOL.",
     Name: "Magenta"
   },
   125: {
