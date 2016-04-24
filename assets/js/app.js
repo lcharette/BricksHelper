@@ -821,7 +821,9 @@ PBHelper.prototype.SetSearch = function() {
 		var items = itemordesignnumber.split(",");
 
 		//Edit the url hash
-		document.location.hash = "set-"+itemordesignnumber;
+		if (document.location.hash != "#set-"+itemordesignnumber) {
+			history.pushState({type: 'set', query: itemordesignnumber}, "Search set(s) " + itemordesignnumber, "#set-"+itemordesignnumber);
+		}
 
 		//Set the infos for the progress
 		var currentPart = 0;
@@ -1202,7 +1204,9 @@ PBHelper.prototype.BrickSearch = function() {
 		var items = itemordesignnumber.split(",");
 
 		//Edit the url hash
-		document.location.hash = "brick-"+itemordesignnumber;
+		if (document.location.hash != "#brick-"+itemordesignnumber) {
+			history.pushState({type: 'brick', query: itemordesignnumber}, "Search brick(s) " + itemordesignnumber, "#brick-"+itemordesignnumber);
+		}
 
 		//Set the infos for the progress
 		var currentPart = 0;
@@ -2586,29 +2590,44 @@ PBHelper.prototype.Navigation = function() {
 
 	}
 
-	//Since navigation is called when PBH is lunched, we can do
-	//this simple hash detection here
-	//1° Get the hash
-	var hash = window.location.hash;
+	function hashWatch(_this) {
+		//Since navigation is called when PBH is lunched, we can do
+		//this simple hash detection here
+		//1° Get the hash
+		var hash = window.location.hash;
 
-	//2° we use a simple format of "SearchType-SearchQuery" (For example "#brick-50746,50745") So we separate the two using the "-"
-	hash = hash.split("-", 2);
+		//2° we use a simple format of "SearchType-SearchQuery" (For example "#brick-50746,50745") So we separate the two using the "-"
+		hash = hash.split("-", 2);
 
-	//3° Switch action. don't forget the "serachType" will always begin with the "#"
-	switch (hash[0]) {
-		case '#brick':
-		case '#bricks':
-		case '#SearchBrick':
-			this.BrickSearch.SearchBrick(hash[1]);
-		break;
+		//3° Switch action. don't forget the "serachType" will always begin with the "#"
+		switch (hash[0]) {
+			case '#brick':
+			case '#bricks':
+			case '#SearchBrick':
+				_this.BrickSearch.SearchBrick(hash[1]);
+			break;
 
-		case '#set':
-		case '#sets':
-		case '#SetSearch':
-			this.SetSearch.SearchSet(hash[1]);
-		break;
+			case '#set':
+			case '#sets':
+			case '#SetSearch':
+				_this.SetSearch.SearchSet(hash[1]);
+			break;
 
+		}
 	}
+
+	//Wrap the addEventListener so "_this" could be defined localy
+	(function(_this) {
+		window.addEventListener('popstate', function(event)
+		{
+		    if (event.state != null) {
+			    hashWatch(_this);
+		    }
+		});
+	}(this));
+
+	//Initial load
+	hashWatch(this);
 }
 
 /*
