@@ -504,5 +504,9 @@ var LEGO_Color = {
   329: {
     LegoID: "WHITE GLOW",
     Name: "Glow in Dark White"
+  },
+  330: {
+    LegoID: "olive green",
+    Name: "Olive Green"
   }
 }
