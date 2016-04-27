@@ -4,9 +4,13 @@ title: Changelog
 permalink: /changelog/
 ---
 
+* **April 26th 2016** 
+	* Added the the formatted url to lists and main menu 
+
 * **April 24th 2016** 
 	* Added option to rename existing lists
-	* Added share button for bricks and set search and formatted url for search query to share to search
+	* Added share button for bricks and set search 
+	* Added formatted url to search query for easier sharing
 
 * **April 13th 2016** 
 	* Fixed a page reload when editing a brick quantity

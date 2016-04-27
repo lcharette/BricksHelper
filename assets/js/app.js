@@ -786,8 +786,6 @@ PBHelper.prototype.SetSearch = function() {
 
 	var totalSearch = 0; //Number of sets to search for
 	this.fetchData = new Object;
-	//this.SetSearch.SortValue = "ID";
-	//this.SetSearch.SortOrder = "ASC";
 
 	/*
 	 * SetSearch UI variables
@@ -808,17 +806,26 @@ PBHelper.prototype.SetSearch = function() {
 	 * LDDUpload main Functions
 	 */
 
+	this.SetSearch.CurrentSearch = function() {
+		return $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
+	}
+
 	this.SetSearch.Search = function() {
+
+		//Get the form data
+		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
+		var items = itemordesignnumber.split(",");
+
+		//If it's empty, we abort
+		if (itemordesignnumber == "") {
+			return;
+		}
 
 		//Reset the UI
 		this.UI_reset();
 
 		//Disable the search buttons
 		this.UI_disableButtons();
-
-		//Get the form data
-		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
-		var items = itemordesignnumber.split(",");
 
 		//Edit the url hash
 		if (document.location.hash != "#set-"+itemordesignnumber) {
@@ -1140,11 +1147,14 @@ PBHelper.prototype.SetSearch = function() {
 	//This function force search the brick ID specified in argument
 	this.SetSearch.SearchSet = function(setId) {
 
-		//Update the form
-		$(this.UI.Main).find(this.UI.FormInput).val(setId);
+		if (setId != null) {
 
-		//Send the search
-		this.Search();
+			//Update the form
+			$(this.UI.Main).find(this.UI.FormInput).val(setId);
+
+			//Send the search
+			this.Search();
+		}
 
 		//Show the page in navigation
 		this.parent.Navigation.Go(this.UI.Main);
@@ -1189,7 +1199,20 @@ PBHelper.prototype.BrickSearch = function() {
 	 * BrickSearch main Functions
 	 */
 
+	this.BrickSearch.CurrentSearch = function() {
+		return $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
+	}
+
 	this.BrickSearch.Search = function() {
+
+		//Get the form data
+		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
+		var items = itemordesignnumber.split(",");
+
+		//If it's empty, we abort
+		if (itemordesignnumber == "") {
+			return;
+		}
 
 		//Reset the UI
 		this.UI_reset();
@@ -1198,10 +1221,6 @@ PBHelper.prototype.BrickSearch = function() {
 		this.UI_disableButtons();
 
 		$(this.UI.ErrorPlaceholder).html("");
-
-		//Get the form data
-		var itemordesignnumber = $(this.UI.Main).find(this.UI.Form).find(this.UI.FormInput).val();
-		var items = itemordesignnumber.split(",");
 
 		//Edit the url hash
 		if (document.location.hash != "#brick-"+itemordesignnumber) {
@@ -1450,11 +1469,14 @@ PBHelper.prototype.BrickSearch = function() {
 	//This function force search the brick ID specified in argument
 	this.BrickSearch.SearchBrick = function(brickid) {
 
-		//Update the form
-		$(this.UI.Main).find(this.UI.FormInput).val(brickid);
+		if (brickid != null) {
 
-		//Send the search
-		this.Search();
+			//Update the form
+			$(this.UI.Main).find(this.UI.FormInput).val(brickid);
+
+			//Send the search
+			this.Search();
+		}
 
 		//Show the page in navigation
 		this.parent.Navigation.Go(this.UI.Main);
@@ -1787,7 +1809,7 @@ PBHelper.prototype.List = function() {
 
 		//Reset some vars
 		this.lists = new Object();
-		this.active = 0;
+		//this.active = 0;
 
 		//We keep this secured
 		var _this = this;
@@ -1813,6 +1835,11 @@ PBHelper.prototype.List = function() {
 
 				//Setup the main list of lists. The lists are already in 'this'
 				_this.setupMainList();
+
+				//If we have an active, we show it
+				if (_this.active > 0) {
+					_this.refreshList();
+				}
 
 			} else if (!reponse.success && reponse.errorCode == 406) {
 
@@ -2037,6 +2064,11 @@ PBHelper.prototype.List = function() {
 
 		//Get the list data
 		this.active = $(element).data('listID');
+
+		//Set the url hash
+		if (document.location.hash != "#list-"+this.active) {
+			history.pushState({type: 'list', query: this.active}, "List " + this.active, "#list-"+this.active);
+		}
 
 		//Refresh the current list
 		this.refreshList();
@@ -2491,6 +2523,13 @@ PBHelper.prototype.List = function() {
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listCreateForm).show(); //Show the create list
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.listPrevious).hide();	//Hide the previous button
 		$(this.UI.Main).find(this.UI.Mainlist).find(this.UI.manageUserPannel).hide(); //The manage user pannel
+
+		this.active = 0;
+
+		//For the nav!
+		if (document.location.hash != "#list") {
+			history.pushState({type: "list", query: ""}, "My Lists", "#list");
+		}
 	}
 
 	//This list show the list HTML
@@ -2568,6 +2607,69 @@ PBHelper.prototype.Navigation = function() {
 
 		//Find the selected name
 		var selected_nav = $(element).data("target");
+		var selected_hash = $(element).data("nav");
+
+		//Set the url hash
+		switch (selected_hash) {
+			case 'brick':
+
+				//Get the current search
+				var data = this.parent.BrickSearch.CurrentSearch();
+
+				//If we have a search going on, we must go back to it
+				if (data != "") {
+					if (document.location.hash != "#brick-"+data) {
+						history.pushState({type: "brick", query: data}, "Search Brick(s) " + data, "#brick-"+data);
+					}
+
+				//Otherwise, we do the default stuff
+				} else {
+					if (document.location.hash != "#brick") {
+						history.pushState({type: "brick", query: ""}, "Search Bricks", "#brick");
+					}
+				}
+			break;
+
+			case 'set':
+
+				//Get the current search
+				var data = this.parent.SetSearch.CurrentSearch();
+
+				//If we have a search going on, we must go back to it
+				if (data != "") {
+					if (document.location.hash != "#set-"+data) {
+						history.pushState({type: "set", query: data}, "Search Set(s) " + data, "#set-"+data);
+					}
+
+				//Otherwise, we do the default stuff
+				} else {
+					if (document.location.hash != "#set") {
+						history.pushState({type: "set", query: ""}, "Search Set", "#set");
+					}
+				}
+			break;
+
+			case 'ldd':
+				history.pushState({type: "ldd", query: ""}, "LDD Import", "#ldd");
+			break;
+
+			case 'list':
+
+				//If we have a list active, we must go back to it
+				if (this.parent.List.active > 0) {
+					if (document.location.hash != "#list-"+this.parent.List.active) {
+						history.pushState({type: "list", query: this.parent.List.active}, "My Lists - " + this.parent.List.active, "#list-"+this.parent.List.active);
+					}
+
+				//Otherwise, we do the default stuff
+				} else {
+					if (document.location.hash != "#list") {
+						history.pushState({type: "list", query: ""}, "My Lists", "#list");
+					}
+				}
+			break;
+		}
+
 
 		//Go fo it!
 		this.Go("."+selected_nav);
@@ -2613,6 +2715,17 @@ PBHelper.prototype.Navigation = function() {
 				_this.SetSearch.SearchSet(hash[1]);
 			break;
 
+			case '#ldd':
+				_this.Navigation.Go(_this.LDDUpload.UI.Main);
+			break;
+
+			case '#list':
+				_this.Navigation.Go(_this.List.UI.Main);
+
+				if (hash[1] != null) {
+					_this.List.active = hash[1];
+				}
+			break;
 		}
 	}
 
