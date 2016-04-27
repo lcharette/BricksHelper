@@ -434,7 +434,7 @@ PBHelper.prototype.LDDUpload = function() {
 			$.ajax({
 
 				method: "GET",
-				timeout: _this.parent.AjaxTimeout * 1000,
+				//timeout: _this.parent.AjaxTimeout * 1000,
 				url: _this.parent.bricks_base_url + DesignId + "&country=" + _this.parent.country,
 
 			}).always(function(data) {
@@ -855,7 +855,7 @@ PBHelper.prototype.SetSearch = function() {
 			$.ajax({
 
 				method: "GET",
-				timeout: _this.parent.AjaxTimeout * 1000,
+				//timeout: _this.parent.AjaxTimeout * 1000,
 				url: _this.parent.sets_base_url + item + "&country=" + _this.parent.country,
 
 			}).always(function(data) {
@@ -1250,7 +1250,7 @@ PBHelper.prototype.BrickSearch = function() {
 			$.ajax({
 
 				method: "GET",
-				timeout: _this.parent.AjaxTimeout * 1000,
+				//timeout: _this.parent.AjaxTimeout * 1000,
 				url: _this.parent.bricks_base_url + item + "&country=" + _this.parent.country,
 
 			}).always(function(data) {
@@ -2159,7 +2159,7 @@ PBHelper.prototype.List = function() {
 			$.ajax({
 
 				method: "GET",
-				timeout: _this.parent.AjaxTimeout * 1000,
+				//timeout: _this.parent.AjaxTimeout * 1000,
 				url: this.parent.bricks_base_url + bricks[key].data.getProperty('ID') + "&country=" + this.parent.country,
 
 			}).always(function(data) {
