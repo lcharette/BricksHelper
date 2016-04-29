@@ -6,7 +6,7 @@
 	if (!empty($_FILES)) {
 
 		//Vérifie que fichier LDD. Le 2e option est testé pour utiliser Dropbox via iPhone
-		if ($_FILES['file']['type'] != "application/x-legoexchangeformat" && $_FILES['file']['type'] != "application/octet-stream") {
+		/*if ($_FILES['file']['type'] != "application/x-legoexchangeformat" && $_FILES['file']['type'] != "application/octet-stream") {
 
 			returnPage(array(
 				'errorCode' => 415,
@@ -14,7 +14,7 @@
 				'errorDetail' => $_FILES['file']['type']
 			));
 
-		} else {
+		} else {*/
 
 			//1° Get the image
 			$image_file_content = file_get_contents('zip://'.$_FILES['file']['tmp_name'].'#IMAGE100.PNG');
@@ -32,7 +32,7 @@
 			if ($lxfml_file_content == "") {
 				returnPage(array(
 					'errorCode' => 416,
-					'msg' => "LDD file can't be analysed"
+					'msg' => "LDD file can't be analyzed. #IMAGE100.LXFML can't be found or is empty."
 				));
 			}
 
@@ -52,7 +52,6 @@
 					processBricks($brick_data, $return_bricks, $nb_elements, $total_bricks);
 				}
 
-			//} else if (count($lxfml_array['Bricks']['Brick']) == 1) {
 			} else {
 				processBricks($lxfml_array['Bricks']['Brick'], $return_bricks, $nb_elements, $total_bricks);
 			}
@@ -65,7 +64,7 @@
 				'bricks' => $return_bricks,
 				'image'	=> $image
 			));
-		}
+		//}
 
 
 	} else {
