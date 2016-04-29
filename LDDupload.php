@@ -5,18 +5,32 @@
 
 	if (!empty($_FILES)) {
 
-		//Vérifie que fichier LDD. Le 2e option est testé pour utiliser Dropbox via iPhone
-		/*if ($_FILES['file']['type'] != "application/x-legoexchangeformat" && $_FILES['file']['type'] != "application/octet-stream") {
+			//1° On va chercher les pièces
+			$lxfml_file_content = file_get_contents('zip://'.$_FILES['file']['tmp_name'].'#IMAGE100.LXFML');
 
-			returnPage(array(
-				'errorCode' => 415,
-				'msg' => "Not an LDD file",
-				'errorDetail' => $_FILES['file']['type']
-			));
+			//If we didn't find any content to analyse, return error message
+			if ($lxfml_file_content == "") {
 
-		} else {*/
+				//Vérifie que fichier LDD. Le 2e option est testé pour utiliser Dropbox via iPhone
+				//We already know we don't have a valid file. The error message will help debug what's going on (corrupted ldd file, or not an LDD file)
+				if ($_FILES['file']['type'] != "application/x-legoexchangeformat" && $_FILES['file']['type'] != "application/octet-stream") {
 
-			//1° Get the image
+					returnPage(array(
+						'errorCode' => 415,
+						'msg' => "Not an LDD file (IMAGE100.LXFML can't be found or is empty)",
+						'errorDetail' => $_FILES['file']['type']
+					));
+
+				} else {
+
+					returnPage(array(
+						'errorCode' => 416,
+						'msg' => "LDD file can't be analyzed (IMAGE100.LXFML can't be found or is empty)"
+					));
+				}
+			}
+
+			//2° Get the image
 			$image_file_content = file_get_contents('zip://'.$_FILES['file']['tmp_name'].'#IMAGE100.PNG');
 
 			//Vérifie qu'on a une image
@@ -24,16 +38,6 @@
 				$image = "data:image/png;base64,".base64_encode($image_file_content); //Encode l'image en base64
 			} else {
 				$image = "";
-			}
-
-			//2° On va chercher les pièces
-			$lxfml_file_content = file_get_contents('zip://'.$_FILES['file']['tmp_name'].'#IMAGE100.LXFML');
-
-			if ($lxfml_file_content == "") {
-				returnPage(array(
-					'errorCode' => 416,
-					'msg' => "LDD file can't be analyzed. #IMAGE100.LXFML can't be found or is empty."
-				));
 			}
 
 			$lxfml_xml = simplexml_load_string($lxfml_file_content);
@@ -64,8 +68,6 @@
 				'bricks' => $return_bricks,
 				'image'	=> $image
 			));
-		//}
-
 
 	} else {
 
