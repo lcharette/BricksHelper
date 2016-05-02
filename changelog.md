@@ -4,6 +4,12 @@ title: Changelog
 permalink: /changelog/
 ---
 
+* **May 1st 2016** 
+	* Added visual feedback to the "Add element to list" button
+
+* **April 29th 2016** 
+	* Fix upload bug on some Windows/Firefox case [[See post #15]](http://www.eurobricks.com/forum/index.php?showtopic=121587&#entry2543033)
+
 * **April 26th 2016** 
 	* Added the the formatted url to lists and main menu 
 
@@ -51,25 +57,24 @@ permalink: /changelog/
 ***
 
 ## Things to fix (need to do)
-* Renaming lists
 * Add "forgot password?" form
 * Fix for UI when loging out and relogging
-* Add visual feedback when adding a brick to a list
 * Improve error management
 * Optimize cache system
-* Copy list. Merge list. Add part from one list to another
+* Copy / Merge list. Add part from one list to another
 * Display store quantity
 * Edit list image
+* Caching system for parts value
+* Direct link to Rebrickable/Bricklink/Brickset set/brick page
 
 
 ## Features wishlist (nice to have)
 * Excel / CVS export
-* Share list option
-* Public / general lists gallery
+* Bricklink/Rebrickable/Brickset list import/export
+* List public sharing option
+* Public / General list gallery
 * Multilanguages support
 * Send list to B&P basket
-* Rebrickable/Brickset/other (MOC) import
 * Alternative or similar parts suggestion (from rebrickable, cache, other)
-* Caching system for parts value
 * Pick-a-Brick support
 * Etc.

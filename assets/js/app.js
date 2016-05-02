@@ -173,6 +173,33 @@ function PBHelper (options) {
 
 			//Get the lsit ID from the list selector and we have a LegoElement object alreay. So here we go
 			_this.List.addElement($(this).parents(".listAdd").data('listid'), brick);
+
+			//We now get the span where we will show the feedback
+			//I use "v" because I'm lazy
+			var v = $(t).find(".listAdd .btn-add-feedback");
+
+			//We get the currently displayed text in this feedback element
+			var nb = $(v).text();
+
+			//The span will either containt nothing, or "+n".
+			//In case of "+n", we remove the "+" and parse the "n" to make sure it's an INT we can ++ on
+			//If it's empty, we go strait to say it's 0
+			if (nb != "") {
+				nb = parseInt(nb.substr(1));
+			} else {
+				nb = 0;
+			}
+
+			//We now have the current number we already added. This is a new one
+			nb++;
+
+			//We display the new number, don't forget to add the "+" back
+			$(v).text("+"+nb);
+
+			//Reset and Set new animation
+			$(v).stop(true, true); 				//This one should stop any action pending
+			$(v).show();						//In case it's already faded.
+			$(v).delay(5000).fadeOut('slow');	//We setup the thing to disapear in +/- 5 secs.
 		});
 
 		//Taking care of the action buttons
