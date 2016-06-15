@@ -40,6 +40,6 @@ The _production_ tag simply tell Jekyll to compile the statics pages while point
 Site will be ready for you in the ``_site/`` directory.
 
 ##Where to go next.
-Questions about what when how and when is Bricks and Pieces Helper? [See this link](http://lego.bbqsoftwares.com) or [this other link](http://www.eurobricks.com/forum/index.php?showtopic=121587).
+Questions about what when how and when is Bricks and Pieces Helper? [See this link](http://bricks.bbqsoftwares.com) or [this other link](http://www.eurobricks.com/forum/index.php?showtopic=121587).
 
 Want to contribute? Don't be shy! Submit a pull request and check how the issues section for what's left to do (hint, a lot!)
