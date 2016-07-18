@@ -4,6 +4,9 @@ title: Changelog
 permalink: /changelog/
 ---
 
+* **July 17th 2016** 
+	* Changed mysql extension to mysqli (mysql deprecated in PHP 5.5.0)
+	
 * **May 1st 2016** 
 	* Added visual feedback to the "Add element to list" button
 

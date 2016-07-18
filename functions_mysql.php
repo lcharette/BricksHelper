@@ -38,8 +38,8 @@ class MySQL {
 	 * @return void
 	 */
 	private function mySQL_connect() {
-		$this->DBConn = mysql_connect($this->DBhost,$this->DBuser,$this->DBpass) or die($this->mySQL_error(mysql_error()));
-		mysql_select_db($this->DBName, $this->DBConn) or die($this->mySQL_error(mysql_error()));
+		$this->DBConn = mysqli_connect($this->DBhost,$this->DBuser,$this->DBpass) or die($this->mySQL_error(mysqli_error()));
+		mysqli_select_db($this->DBConn, $this->DBName) or die($this->mySQL_error(mysqli_error()));
 	}
 
 	/**
@@ -49,7 +49,7 @@ class MySQL {
 	 * @return void
 	 */
 	private function mySQL_deconnect() {
-		mysql_close($this->DBConn);
+		mysqli_close($this->DBConn);
 	}
 
 	/**
@@ -80,10 +80,10 @@ class MySQL {
 	 */
 	function query($sql) {
 		$this->mySQL_connect();
-		$query = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
+		$query = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
 
 		$ligne = array();
-		while ($array = mysql_fetch_assoc($query)) {
+		while ($array = mysqli_fetch_assoc($query)) {
 			$ligne[] = $array;
 		}
 
@@ -100,7 +100,7 @@ class MySQL {
 	 */
 	function rawQuery($sql) {
 		$this->mySQL_connect();
-		$query = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
+		$query = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
 		$this->mySQL_deconnect();
 		return true;
 	}
@@ -125,8 +125,8 @@ class MySQL {
 				$sql .= $dkey."='".$item."' ";
 			}
 		}
-		$query = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
-		$num = mysql_fetch_array($query);
+		$query = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
+		$num = mysqli_fetch_array($query);
 		return $num[num];
 	}
 
@@ -162,9 +162,9 @@ class MySQL {
 			}
 		}
 
-		$query = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
+		$query = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
 
-		$ligne = mysql_fetch_assoc($query);
+		$ligne = mysqli_fetch_assoc($query);
 		$this->mySQL_deconnect();
 		return $ligne;
 	}
@@ -205,10 +205,10 @@ class MySQL {
 			$sql .= " LIMIT ".$limit;
 		}
 
-		$query = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
+		$query = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
 
 		$ligne = array();
-		while ($array = mysql_fetch_assoc($query)) {
+		while ($array = mysqli_fetch_assoc($query)) {
 			$ligne[] = $array;
 		}
 
@@ -254,8 +254,8 @@ class MySQL {
 
 		$sql .= ")";
 
-		$insert = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
-		$returnedID = mysql_insert_id();
+		$insert = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
+		$returnedID = mysqli_insert_id();
 		$this->mySQL_deconnect();
 
 		return $returnedID;
@@ -297,7 +297,7 @@ class MySQL {
 			}
 		}
 
-		$update = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
+		$update = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
 		$this->mySQL_deconnect();
 		return true;
 	}
@@ -330,7 +330,7 @@ class MySQL {
 			}
 		}
 
-		$delete = mysql_query($sql, $this->DBConn) or die($this->mySQL_error(mysql_error()." (SQL: \"".$sql."\")"));
+		$delete = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
 		$this->mySQL_deconnect();
 		return true;
 	}
