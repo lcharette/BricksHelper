@@ -255,7 +255,7 @@ class MySQL {
 		$sql .= ")";
 
 		$insert = mysqli_query($this->DBConn, $sql) or die($this->mySQL_error(mysqli_error()." (SQL: \"".$sql."\")"));
-		$returnedID = mysqli_insert_id();
+		$returnedID = mysqli_insert_id($this->DBConn);
 		$this->mySQL_deconnect();
 
 		return $returnedID;

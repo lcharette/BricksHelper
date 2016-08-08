@@ -14,7 +14,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://bricks.bbqsoftwares.com" # the base hostname & protocol for your site
 
 EurobricksLink : "http://www.eurobricks.com/forum/index.php?showtopic=121587&#entry2471034"
-GithubLink : "https://github.com/bbqsoftwares/BricksHelper"
+GithubLink : "https://github.com/lcharette/BricksHelper"
 
 # Build settings
 markdown: kramdown

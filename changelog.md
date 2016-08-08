@@ -4,24 +4,27 @@ title: Changelog
 permalink: /changelog/
 ---
 
-* **July 17th 2016** 
+* **August 7th 2016**
+	* Fixed error while saving uploaded LDD file to new list
+
+* **July 17th 2016**
 	* Changed mysql extension to mysqli (mysql deprecated in PHP 5.5.0)
-	
-* **May 1st 2016** 
+
+* **May 1st 2016**
 	* Added visual feedback to the "Add element to list" button
 
-* **April 29th 2016** 
+* **April 29th 2016**
 	* Fix upload bug on some Windows/Firefox case [[See post #15]](http://www.eurobricks.com/forum/index.php?showtopic=121587&#entry2543033)
 
-* **April 26th 2016** 
-	* Added the the formatted url to lists and main menu 
+* **April 26th 2016**
+	* Added the the formatted url to lists and main menu
 
-* **April 24th 2016** 
+* **April 24th 2016**
 	* Added option to rename existing lists
-	* Added share button for bricks and set search 
+	* Added share button for bricks and set search
 	* Added formatted url to search query for easier sharing
 
-* **April 13th 2016** 
+* **April 13th 2016**
 	* Fixed a page reload when editing a brick quantity
 	* Fixed bug with displaying part with no element ID in LDD Upload table
 
