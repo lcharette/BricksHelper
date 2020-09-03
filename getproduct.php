@@ -13,15 +13,15 @@ $country = request_var("country", "CA");
 // Create a stream
 $opts = array(
   'http'=>array(
-    'method'=>"GET",
-    'header'=>"Accept-language: en\r\n" .
-              "Cookie: csAgeAndCountry={'age':60,'countrycode':'".$country."'}\r\n"
+    'method' => "GET",
+    'header' => ""
   )
 );
 $context = stream_context_create($opts);
 
 // Open the file using the HTTP headers set above
-$data = file_get_contents('https://wwwsecure.us.lego.com/en-us/service/rpservice/getproduct?issalesflow=true&productnumber=' . $productNumber, false, $context);
+$url = "https://bricksandpieces.services.lego.com/api/v1/bricks/product/$productNumber?country=$country&orderType=buy";
+$data = file_get_contents($url, false, $context);
 
 //Add the data requested to the returned data
 $data_json = json_decode($data, true);

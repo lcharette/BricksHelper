@@ -14,13 +14,14 @@ $country = request_var("country", "CA");
 $opts = array(
   'http'=>array(
     'method'	=> "GET",
-    'header'	=> "Accept-language: en\r\nCookie: csAgeAndCountry={'age':60,'countrycode':'".$country."'}\r\n"
+    'header'  => ""
   )
 );
 $context = stream_context_create($opts);
 
 // Open the file using the HTTP headers set above
-$data = file_get_contents('https://wwwsecure.us.lego.com/en-US/service/rpservice/getitemordesign?isSalesFlow=true&itemordesignnumber=' . $getitemordesign, false, $context);
+$url = "https://bricksandpieces.services.lego.com/api/v1/bricks/items/$getitemordesign?country=$country&orderType=buy";
+$data = file_get_contents($url, false, $context);
 
 //Add the data requested to the returned data
 $data_json = json_decode($data, true);

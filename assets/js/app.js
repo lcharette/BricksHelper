@@ -481,7 +481,7 @@ PBHelper.prototype.LDDUpload = function() {
 					//Send error to console
 					console.warn("Error in AJAX request : Connexion timed out", data);
 
-				} else if (data.Bricks == null) {
+				} else if (data.bricks == null) {
 
 					//Set the text
 					//$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Set " + data.REQUEST + " not found");
@@ -523,24 +523,24 @@ PBHelper.prototype.LDDUpload = function() {
 					$.each(color_data, function( colorCode, NbRequired ){
 
 						//1° We try to find a color match
-						var found_brick = _this.parent.associateColor(colorCode, data.Bricks);
+						var found_brick = _this.parent.associateColor(colorCode, data.bricks);
 
 						//Create a brick
 						if (found_brick != -1) {
 							var b = new LegoElement({
-								'ID' : parseInt(data.Bricks[found_brick].ItemNo),
-								'designid' : parseInt(data.Bricks[found_brick].DesignId),
-								'asset': data.ImageBaseUrl + data.Bricks[found_brick].Asset,
-								'assetRaw': data.Bricks[found_brick].Asset,
+								'ID' : parseInt(data.bricks[found_brick].itemNumber),
+								'designid' : parseInt(data.bricks[found_brick].designId),
+								'asset': data.bricks[found_brick].imageUrl,
+								'assetRaw': data.bricks[found_brick].imageUrl,
 								'ImageBaseUrl': data.ImageBaseUrl,
-								'itemDesc': data.Bricks[found_brick].ItemDescr,
-								'price': data.Bricks[found_brick].Price,
-								'currency': data.Bricks[found_brick].CId,
-								'stock': data.Bricks[found_brick].SQty
+								'itemDesc': data.bricks[found_brick].description,
+								'price': data.bricks[found_brick].price.amount,
+								'currency': data.bricks[found_brick].price.currency,
+								'stock': data.bricks[found_brick].maxAmount
 							});
 
 							//set the brick color
-							b.setColorFromStr(data.Bricks[found_brick].ColourDescr);
+							b.setColorFromStr(data.bricks[found_brick].ColourDescr);
 
 							//Add the created brick to the list
 							_this.Parts.addBrick(b, NbRequired);
@@ -550,9 +550,9 @@ PBHelper.prototype.LDDUpload = function() {
 							console.warn("Color match not found for color code '" + colorCode + "' and designID '"+ DesignId +"'");
 
 							var b = new LegoElement({
-								'designid' : parseInt(data.Bricks[0].DesignId),
-								'asset': data.ImageBaseUrl + data.Bricks[0].Asset,
-								'itemDesc': data.Bricks[0].ItemDescr,
+								'designid' : parseInt(data.bricks[0].designId),
+								'asset': data.bricks[0].imageUrl,
+								'itemDesc': data.bricks[0].description,
 								'price': -2,
 							});
 
@@ -901,7 +901,7 @@ PBHelper.prototype.SetSearch = function() {
 					//Send error to console
 					console.warn("Error in AJAX request : Connexion timed out", data);
 
-				} else if (data.Bricks == null) {
+				} else if (data.bricks == null) {
 
 					//Set the text
 					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Set " + data.REQUEST + " not found");
@@ -920,27 +920,27 @@ PBHelper.prototype.SetSearch = function() {
 					//Create a list element
 					_this.fetchData[data.REQUEST] = new LegoBrickList({
 						"query" : data.REQUEST,
-						"ProductName": data.Product.ProductName,
-						"ProductAsset": data.ImageBaseUrl + data.Product.Asset,
-						"ProductNo": data.Product.ProductNo,
+						"ProductName": '', //data.Product.ProductName,
+						"ProductAsset": '', //data.Product.imageUrl,
+						"ProductNo": '', //data.Product.ProductNo,
 						"SortOrder": "ASC",
 						"SortValue": "ID"
 					});
 
 					//Process each brick in result
-					$.each(data.Bricks, function( index, brick ){
+					$.each(data.bricks, function( index, brick ){
 
 						//Create a brick
 						var b = new LegoElement({
-							'ID' : parseInt(brick.ItemNo),
-							'designid' : parseInt(brick.DesignId),
-							'asset': data.ImageBaseUrl + brick.Asset,
-							'assetRaw': brick.Asset,
+							'ID' : parseInt(brick.itemNumber),
+							'designid' : parseInt(brick.designId),
+							'asset': brick.imageUrl,
+							'assetRaw': brick.imageUrl,
 							'ImageBaseUrl': data.ImageBaseUrl,
-							'itemDesc': brick.ItemDescr,
-							'price': brick.Price,
-							'currency': brick.CId,
-							'stock': brick.SQty
+							'itemDesc': brick.description,
+							'price': brick.price.amount,
+							'currency': brick.price.currency,
+							'stock': brick.maxAmount
 						});
 
 						//set the brick color
@@ -1296,7 +1296,7 @@ PBHelper.prototype.BrickSearch = function() {
 					//Send error to console
 					console.warn("Error in AJAX request : Connexion timed out", data);
 
-				} else if (data.Bricks == null) {
+				} else if (data.bricks == null) {
 
 					//Set the text
 					$(_this.UI.Main).find(_this.UI.Error).find("span.txt").html("Element " + data.REQUEST + " not found");
@@ -1320,23 +1320,23 @@ PBHelper.prototype.BrickSearch = function() {
 					});
 
 					//Process each brick in result
-					$.each(data.Bricks, function( index, brick ){
+					$.each(data.bricks, function( index, brick ){
 
 						//Create a brick
 						var b = new LegoElement({
-							'ID' : parseInt(brick.ItemNo),
-							'designid' : parseInt(brick.DesignId),
-							'asset': data.ImageBaseUrl + brick.Asset,
-							'assetRaw': brick.Asset,
+							'ID' : parseInt(brick.itemNumber),
+							'designid' : parseInt(brick.designId),
+							'asset': brick.imageUrl,
+							'assetRaw': brick.imageUrl,
 							'ImageBaseUrl': data.ImageBaseUrl,
-							'itemDesc': brick.ItemDescr,
-							'price': brick.Price,
-							'currency': brick.CId,
-							'stock': brick.SQty
+							'itemDesc': brick.description,
+							'price': brick.price.amount,
+							'currency': brick.price.currency,
+							'stock': brick.maxAmount
 						});
 
 						//set the brick color
-						b.setColorFromStr(brick.ColourDescr);
+						b.setColorFromStr(brick.colorFamily);
 
 						//Add the created brick to the list
 						_this.fetchData[data.REQUEST].addBrick(b);
@@ -1903,10 +1903,10 @@ PBHelper.prototype.List = function() {
 				var b = new LegoElement({
 					'ID' : parseInt(brick.elementID),
 					'designid' : parseInt(brick.designID),
-					'asset' : _this.parent.LEGOBaseURL + brick.Asset,
-					'assetRaw': brick.Asset,
+					'asset' : brick.imageUrl,
+					'assetRaw': brick.imageUrl,
 					'ImageBaseUrl': _this.parent.LEGOBaseURL,
-					'itemDesc' : brick.ItemDescr,
+					'itemDesc' : brick.description,
 				});
 
 				//Set the color
@@ -2200,7 +2200,7 @@ PBHelper.prototype.List = function() {
 					//Send error to console
 					console.warn("Error in AJAX request", data);
 
-				} else if (data.Bricks == null) {
+				} else if (data.bricks == null) {
 
 					//!TODO Show error to user
 					console.warn("Element " + data.REQUEST + " not found", data);
@@ -2219,17 +2219,17 @@ PBHelper.prototype.List = function() {
 					}
 
 					//Update the price from the list brick element
-					brick.data.setProperty("price", data.Bricks[0].Price);
-					brick.data.setProperty("currency", data.Bricks[0].CId);
+					brick.data.setProperty("price", data.bricks[0].price.amount);
+					brick.data.setProperty("currency", data.bricks[0].price.currency);
 
 					//We will also update other infos, just in case
 					//N.B.: We shoul'd have to touch the color
-					brick.data.setProperty("asset", data.ImageBaseUrl + data.Bricks[0].Asset);
-					brick.data.setProperty("assetRaw", data.Bricks[0].Asset);
+					brick.data.setProperty("asset", data.bricks[0].imageUrl);
+					brick.data.setProperty("assetRaw", data.bricks[0].imageUrl);
 					brick.data.setProperty("ImageBaseUrl", data.ImageBaseUrl);
-					brick.data.setProperty("designid", data.Bricks[0].DesignId);
-					brick.data.setProperty("itemDesc", data.Bricks[0].ItemDescr);
-					brick.data.setProperty("stock", data.Bricks[0].SQty);
+					brick.data.setProperty("designid", data.bricks[0].designId);
+					brick.data.setProperty("itemDesc", data.bricks[0].description);
+					brick.data.setProperty("stock", data.bricks[0].maxAmount);
 				}
 
 				//We update the progress. Outside the previous if block so even with
